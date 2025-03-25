@@ -11,7 +11,7 @@ jobs:
       # Add SSH key from CircleCI environment variables (your private key)
       - add_ssh_keys:
           fingerprints:
-            - "SHA256:sB23N+T7+eN6IBVwpN8S9kJWrcRNZ8zF+HUmimSx5kY"
+            - "SHA256:kWkJodJE0GxCFhIViAHHaekf7Vqm7HrUzPd+4QcNzDI"
 
       # Create the ~/.ssh directory if it doesn't exist, and set correct permissions
       - run:
