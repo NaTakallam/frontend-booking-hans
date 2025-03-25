@@ -1,0 +1,243 @@
+:root{
+    --primary-color: #800000;
+    --secondary-color: #378A6D;
+    --star-color:#D5A45D;
+    --white-color: #ffffff; 
+    --black-color: #131313;
+    --grey-color: #424242;
+    --light-grey:#616161;
+    --black-input:#E7E7E7;
+
+}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif; /* i need to use the font fellix but it does not work here , i need to intall it */
+}
+/* Left Section (Sign-Up Form) */
+.left-section {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--white-color);
+    padding: 2% 10%;
+}
+.form-container {
+    width: 100%;
+    max-width: 350px;
+    text-align: center;
+}
+.logo-ntk {
+    width: 80px;
+    margin-bottom: 20px;
+}
+h2 {
+    margin-bottom: 10px;
+    font-weight: 600;
+    font-size: 22px;
+    color: var(--black-color);
+}
+p {
+    font-size: 13px;
+    color: var(--light-grey);
+    margin-bottom: 20px;
+}
+.form-group {
+    width: 100%;
+    margin-bottom: 10px;
+    color: var(--gray-color);
+}
+.form-group label {
+    display: block;
+    text-align: left;
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+input {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid var(--black-input);
+    border-radius: 8px;
+    color: var(--black-color);
+    font-size: 13px;
+    box-shadow: 0 2px 2px 0 #1018280D;
+}
+.btn {
+    width: 100%;
+    padding: 11px;
+    border: none;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 8px;
+}
+.signup-btn {
+    background: var(--primary-color);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--white-color);
+    border: 1px solid var(--primary-color);
+}
+.signup-btn:hover{
+    background: var(--white-color);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+.signin-btn {
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    margin-top: 10px;
+}
+.signin-btn:hover {
+    background: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    color: var(--white-color);
+    margin-top: 10px;
+}
+.divider {
+    margin-top:10px;
+    font-size: 13px;
+    color: #888;
+    text-transform: uppercase;
+    font-weight:bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.divider::before, .divider::after {
+    content: "";
+    flex: 1;
+    height: 3px;
+    width:40px;
+    background: #ddd;
+    margin: 0 10px;
+    flex: 0 0 auto;
+}
+.checkbox-container , .forget-color{
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    font-size: 13px;
+    /* text-align:left; */
+    margin-top: 10px;
+}
+.checkbox-container input[type="checkbox"] {
+    /* margin-right: 5px; */
+    width:25px;
+}
+/* Right Section (Image + Testimonial) */
+.right-section {
+    width: 50%;
+    position: relative;
+    background: url('C:\Users\noura\OneDrive\Documents\Nour AL Houda Rifaieh Work\Booking_system\src\static\image1.jpeg') no-repeat center center;
+    background-size: cover;
+    display: flex;
+    align-items:flex-end;
+    justify-content: center;
+    /* align-items: flex-end; */
+    /* justify-content: flex-start; */
+    padding: 40px;
+}
+/* Testimonial Box */
+.testimonial-box {
+    background: #008060;
+    color: white;
+    padding: 25px 35px;
+    border-radius: 12px;
+    max-width: 90%;
+    height:40%;
+    position: absolute;
+    bottom: 40px;
+    /* left: 30px; */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    animation: fadeTestimonial 9s infinite;
+}
+/* Quote Icon */
+.quote-icon {
+    position: relative ;
+    font-size: 250px;
+    color: #FFD700;
+    /* border:2px solid  #008060 ; */
+    top: -10%; 
+    z-index:50;
+    left:-35%; 
+    /* padding:20px; */
+    /* left: -10px;  */
+}
+
+/* .fa-times path {
+stroke: green ;
+stroke-width: 30px;
+} */
+/* Testimonial Text */
+.testimonial-text {
+    font-size: 1.2em;/*25px -> 1.2em  22px -> 1em   13px -> 0.8em, */
+    font-weight: bold;
+    line-height: 1.6;
+    color: #E8F6F3;
+}
+.author {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-top: 5%;
+}
+.subtext {
+    font-size: 0.9em;
+    opacity: 0.9;
+    margin-top:5%;
+}
+.stars {
+    color: #FFD700;
+    font-size: 16px;
+    margin-top: 5%;
+}
+/* Navigation Controls */
+.carousel-controls {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 5%;
+    gap: 60%;
+}
+.carousel-controls button {
+    border: none;
+    font-size: 22px;
+    color: white;
+    cursor: pointer;
+    background-color: transparent;
+    border:1px solid var(--white-color);
+    border-radius:100%;
+}
+.testiominal-info{
+    display:flex;
+    justify-content:space-between;
+}
+/* .right-info{
+    display:flex;
+    align-items:space-between;
+    justify-content:center;
+} */
+.right-info {
+    width:100px;
+    display: flex;
+    align-items: center;
+    /* justify-content: flex-end; */
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+}
+.left-carousal{
+    width:28px;
+    
+}
+.right-carousal{
+    width:28px;
+}
+.forget-color{
+    color:var(--primary-color);
+}
