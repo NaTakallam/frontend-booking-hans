@@ -1,58 +1,70 @@
-# This config was automatically generated from your source code
-# Stacks detected: deps:node:hans-signup
 version: 2.1
-orbs:
-  node: circleci/node@5
+
 jobs:
-  test-node:
-    # Install node dependencies and run tests
-    executor: node/default
-    working_directory: ~/project/hans-signup
-    steps:
-      - checkout:
-          path: ~/project
-      - node/install-packages:
-          pkg-manager: npm
-      - run:
-          name: Run tests
-          command: echo \"No test specified in package.json\"
-  build-node:
-    # Build node project
-    executor: node/default
-    working_directory: ~/project/hans-signup
-    steps:
-      - checkout:
-          path: ~/project
-      - node/install-packages:
-          pkg-manager: npm
-      - run:
-          command: npm run build
-      - run:
-          name: Create the ~/artifacts directory if it doesn't exist
-          command: mkdir -p ~/artifacts
-      # Copy output to artifacts dir
-      - run:
-          name: Copy artifacts
-          command: cp -R build dist public .output .next .docusaurus ~/artifacts 2>/dev/null || true
-      - store_artifacts:
-          path: ~/artifacts
-          destination: node-build
   deploy:
-    # This is an example deploy job, not actually used by the workflow
     docker:
-      - image: cimg/base:stable
+      - image: cimg/base:current
+
     steps:
-      # Replace this with steps to deploy to users
+      - checkout
+
+      # Add SSH key from CircleCI environment variables (your private key)
+      - add_ssh_keys:
+          fingerprints:
+            - "SHA256:sB23N+T7+eN6IBVwpN8S9kJWrcRNZ8zF+HUmimSx5kY"
+
+      # Create the ~/.ssh directory if it doesn't exist, and set correct permissions
       - run:
-          name: deploy
-          command: '#e.g. ./deploy.sh'
-workflows:
-  build-and-test:
-    jobs:
-      - test-node
-      - build-node:
-          requires:
-            - test-node
-    # - deploy:
-    #     requires:
-    #       - build-node
+          name: "Create SSH directory and set permissions"
+          command: |
+            mkdir -p ~/.ssh
+            chmod 700 ~/.ssh
+
+      # Remove the old host key from known_hosts (if it exists)
+      - run:
+          name: "Remove old host key"
+          command: |
+            ssh-keygen -R 209.182.239.192 || true  # Adding `|| true` ensures it doesn't fail if the host isn't present
+
+      # Add the new server host key to known_hosts
+      - run:
+          name: "Add server to known_hosts"
+          command: |
+            ssh-keyscan -p 56378 -H 209.182.239.192 >> ~/.ssh/known_hosts
+            chmod 600 ~/.ssh/known_hosts
+
+      # Test SSH connection to the server (this should prompt for the host key verification only once)
+      - run:
+          name: "Test SSH connection"
+          command: |
+            ssh root@209.182.239.192 -p 56378 "echo 'Connection successful'"
+      - run:
+          name: "Add GitHub to Known Hosts"
+          command: |
+            ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+            chmod 600 ~/.ssh/known_hosts
+
+      - run:
+          name: "Copy files to server"
+          command: |
+            scp -P 56378 -r ${HOME}/project/* root@209.182.239.192:/home/Booking
+
+          
+      # Install rsync
+      - run:
+          name: "Install rsync"
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y rsync
+      
+      
+      - run:
+          name: "Fix Permissions for Plugins"
+          command: |
+            ssh root@209.182.239.192 -p 56378 "chmod -R u+w /home/Booking"
+
+  
+      - run:
+          name: "Deploy Project Files with rsync"
+          command: |
+            rsync -av --checksum -e "ssh -p 56378" ${HOME}/project/ root@209.182.239.192:/home/Booking
