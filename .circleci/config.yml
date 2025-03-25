@@ -34,10 +34,10 @@ jobs:
             chmod 600 ~/.ssh/known_hosts
 
       # Test SSH connection to the server (this should prompt for the host key verification only once)
-      - run:
-          name: "Test SSH connection"
-          command: |
-            ssh root@209.182.239.192 -p 56378 "echo 'Connection successful'"
+      # - run:
+      #     name: "Test SSH connection"
+      #     command: |
+      #       ssh root@209.182.239.192 -p 56378 "echo 'Connection successful'"
       - run:
           name: "Add GitHub to Known Hosts"
           command: |
