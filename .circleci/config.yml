@@ -21,10 +21,10 @@ jobs:
             chmod 700 ~/.ssh
 
       # Remove the old host key from known_hosts (if it exists)
-      - run:
-          name: "Remove old host key"
-          command: |
-            ssh-keygen -R 209.182.239.192 || true  # Adding `|| true` ensures it doesn't fail if the host isn't present
+      # - run:
+      #     name: "Remove old host key"
+      #     command: |
+      #       ssh-keygen -R 209.182.239.192 || true  # Adding `|| true` ensures it doesn't fail if the host isn't present
 
       # Add the new server host key to known_hosts
       - run:
@@ -57,14 +57,20 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y rsync
       
-      
-      - run:
-          name: "Fix Permissions for Plugins"
-          command: |
-            ssh root@209.182.239.192 -p 56378 "chmod -R u+w /home/Booking"
+  
 
   
       - run:
           name: "Deploy Project Files with rsync"
           command: |
             rsync -av --checksum -e "ssh -p 56378" ${HOME}/project/ root@209.182.239.192:/home/Booking
+
+
+
+
+
+workflows:
+  version: 2
+  deploy_workflow:
+    jobs:
+      - deploy
