@@ -5,17 +5,35 @@ jobs:
     docker:
       - image: cimg/node:lts
     steps:
-      - checkout
+      - checkout:
+          path: ~/project
+          
+      # Verify repository contents
+      - run:
+          name: Verify repository contents
+          command: |
+            pwd
+            ls -la
+            if [ ! -f package.json ]; then
+              echo "Error: package.json not found!"
+              echo "Current directory contents:"
+              ls -la
+              exit 1
+            fi
       
       # Install dependencies
       - run:
           name: Install dependencies
-          command: npm install
+          command: |
+            cd ~/project
+            npm install
           
       # Build the project
       - run:
           name: Build project
-          command: npm run build
+          command: |
+            cd ~/project
+            npm run build
       
       # Add SSH key for server access
       - add_ssh_keys:
@@ -37,7 +55,7 @@ jobs:
             ssh -o StrictHostKeyChecking=no -p 56378 $SSH_USER@$SSH_HOST "mkdir -p $DEPLOY_PATH"
             
             # Copy only the dist folder to server
-            scp -o StrictHostKeyChecking=no -P 56378 -r dist/* $SSH_USER@$SSH_HOST:$DEPLOY_PATH/
+            scp -o StrictHostKeyChecking=no -P 56378 -r ~/project/dist/* $SSH_USER@$SSH_HOST:$DEPLOY_PATH/
             
             # Set proper permissions
             ssh -o StrictHostKeyChecking=no -p 56378 $SSH_USER@$SSH_HOST "chmod -R 755 $DEPLOY_PATH"
