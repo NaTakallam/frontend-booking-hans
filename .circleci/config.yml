@@ -21,24 +21,6 @@ jobs:
               exit 1
             fi
       
-      # Install dependencies
-      - run:
-          name: Install dependencies
-          command: |
-            cd ~/project/hans-signup
-            echo "Installing dependencies..."
-            npm install --no-audit --no-fund --progress=false
-            echo "Dependencies installed successfully"
-          
-      # Build the project
-      - run:
-          name: Build project
-          command: |
-            cd ~/project/hans-signup
-            echo "Building project..."
-            npm run build
-            echo "Build completed successfully"
-      
       # Add SSH key for server access
       - add_ssh_keys:
           fingerprints:
@@ -99,15 +81,6 @@ jobs:
               exit 1
             fi
             
-            # Verify dist directory exists
-            echo "Checking dist directory..."
-            if [ ! -d "/home/circleci/project/hans-signup/dist" ]; then
-              echo "Error: dist directory not found"
-              echo "Current directory contents:"
-              ls -la /home/circleci/project/hans-signup/
-              exit 1
-            fi
-            
             # Try to install rsync on the server
             echo "Checking for rsync on server..."
             if ! ssh $SSH_HOST "which rsync"; then
@@ -116,7 +89,7 @@ jobs:
                 echo "Warning: Failed to install rsync on server, falling back to scp"
                 # Fallback to scp
                 echo "Copying files using scp..."
-                if ! scp -r /home/circleci/project/hans-signup/dist/* $SSH_HOST:$DEPLOY_PATH/; then
+                if ! scp -r /home/circleci/project/hans-signup/* $SSH_HOST:$DEPLOY_PATH/; then
                   echo "Error: Failed to copy files to server using scp"
                   exit 1
                 fi
@@ -124,14 +97,14 @@ jobs:
                 echo "rsync installed successfully on server"
                 # Try rsync again
                 echo "Copying files using rsync..."
-                if ! rsync -avz --timeout=30 --delete -e ssh /home/circleci/project/hans-signup/dist/ $SSH_HOST:$DEPLOY_PATH/; then
+                if ! rsync -avz --timeout=30 --delete -e ssh /home/circleci/project/hans-signup/ $SSH_HOST:$DEPLOY_PATH/; then
                   echo "Error: Failed to copy files to server using rsync"
                   exit 1
                 fi
               fi
             else
               echo "rsync found on server, copying files..."
-              if ! rsync -avz --timeout=30 --delete -e ssh /home/circleci/project/hans-signup/dist/ $SSH_HOST:$DEPLOY_PATH/; then
+              if ! rsync -avz --timeout=30 --delete -e ssh /home/circleci/project/hans-signup/ $SSH_HOST:$DEPLOY_PATH/; then
                 echo "Error: Failed to copy files to server using rsync"
                 exit 1
               fi
@@ -144,7 +117,24 @@ jobs:
               exit 1
             fi
             
-            echo "Deployment completed successfully"
+            # Install Node.js on server if not present
+            echo "Checking for Node.js on server..."
+            if ! ssh $SSH_HOST "which node"; then
+              echo "Installing Node.js on server..."
+              if ! ssh $SSH_HOST "curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - && sudo apt-get install -y nodejs"; then
+                echo "Error: Failed to install Node.js on server"
+                exit 1
+              fi
+            fi
+            
+            # Install dependencies and build on server
+            echo "Installing dependencies and building on server..."
+            if ! ssh $SSH_HOST "cd $DEPLOY_PATH && npm install --no-audit --no-fund --progress=false && npm run build"; then
+              echo "Error: Failed to install dependencies or build on server"
+              exit 1
+            fi
+            
+            echo "Deployment and build completed successfully"
 
 workflows:
   version: 2
