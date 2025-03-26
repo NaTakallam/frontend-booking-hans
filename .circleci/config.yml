@@ -51,6 +51,20 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y openssh-client rsync
             
+      # Configure SSH
+      - run:
+          name: Configure SSH
+          command: |
+            mkdir -p ~/.ssh
+            chmod 700 ~/.ssh
+            echo "Host $SSH_HOST" > ~/.ssh/config
+            echo "  HostName $SSH_HOST" >> ~/.ssh/config
+            echo "  User $SSH_USER" >> ~/.ssh/config
+            echo "  Port 56378" >> ~/.ssh/config
+            echo "  IdentityFile ~/.ssh/id_rsa" >> ~/.ssh/config
+            echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+            chmod 600 ~/.ssh/config
+            
       # Deploy to server
       - run:
           name: Deploy to server
@@ -69,14 +83,18 @@ jobs:
             
             # Test SSH connection first
             echo "Testing SSH connection..."
-            if ! timeout 30 ssh -v -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o GlobalKnownHostsFile=/dev/null -o LogLevel=ERROR -p 56378 $SSH_USER@$SSH_HOST "echo 'SSH connection successful'"; then
+            if ! ssh -v $SSH_HOST "echo 'SSH connection successful'"; then
               echo "Error: Failed to establish SSH connection"
+              echo "Please verify:"
+              echo "1. SSH key is properly added to CircleCI"
+              echo "2. SSH key is added to server's authorized_keys"
+              echo "3. Server user has proper permissions"
               exit 1
             fi
             
             # Create deployment directory if it doesn't exist
             echo "Creating deployment directory..."
-            if ! timeout 30 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o GlobalKnownHostsFile=/dev/null -o LogLevel=ERROR -p 56378 $SSH_USER@$SSH_HOST "mkdir -p $DEPLOY_PATH"; then
+            if ! ssh $SSH_HOST "mkdir -p $DEPLOY_PATH"; then
               echo "Error: Failed to create deployment directory"
               exit 1
             fi
@@ -90,14 +108,14 @@ jobs:
             
             # Copy only the dist folder to server with progress
             echo "Copying files to server..."
-            if ! rsync -avz --timeout=30 --delete -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o GlobalKnownHostsFile=/dev/null -o LogLevel=ERROR -p 56378" ~/project/hans-signup/dist/ $SSH_USER@$SSH_HOST:$DEPLOY_PATH/; then
+            if ! rsync -avz --timeout=30 --delete -e ssh ~/project/hans-signup/dist/ $SSH_HOST:$DEPLOY_PATH/; then
               echo "Error: Failed to copy files to server"
               exit 1
             fi
             
             # Set proper permissions
             echo "Setting permissions..."
-            if ! timeout 30 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o GlobalKnownHostsFile=/dev/null -o LogLevel=ERROR -p 56378 $SSH_USER@$SSH_HOST "chmod -R 755 $DEPLOY_PATH"; then
+            if ! ssh $SSH_HOST "chmod -R 755 $DEPLOY_PATH"; then
               echo "Error: Failed to set permissions"
               exit 1
             fi
