@@ -14,8 +14,8 @@ jobs:
           command: |
             pwd
             ls -la
-            if [ ! -f package.json ]; then
-              echo "Error: package.json not found!"
+            if [ ! -f hans-signup/package.json ]; then
+              echo "Error: package.json not found in hans-signup directory!"
               echo "Current directory contents:"
               ls -la
               exit 1
@@ -25,14 +25,14 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            cd ~/project
+            cd ~/project/hans-signup
             npm install
           
       # Build the project
       - run:
           name: Build project
           command: |
-            cd ~/project
+            cd ~/project/hans-signup
             npm run build
       
       # Add SSH key for server access
@@ -55,7 +55,7 @@ jobs:
             ssh -o StrictHostKeyChecking=no -p 56378 $SSH_USER@$SSH_HOST "mkdir -p $DEPLOY_PATH"
             
             # Copy only the dist folder to server
-            scp -o StrictHostKeyChecking=no -P 56378 -r ~/project/dist/* $SSH_USER@$SSH_HOST:$DEPLOY_PATH/
+            scp -o StrictHostKeyChecking=no -P 56378 -r ~/project/hans-signup/dist/* $SSH_USER@$SSH_HOST:$DEPLOY_PATH/
             
             # Set proper permissions
             ssh -o StrictHostKeyChecking=no -p 56378 $SSH_USER@$SSH_HOST "chmod -R 755 $DEPLOY_PATH"
@@ -67,4 +67,4 @@ workflows:
       - deploy:
           filters:
             branches:
-              only: circleci-project-setup  # Deploy only when changes are pushed to main branch 
+              only: main  # Deploy only when changes are pushed to main branch 
