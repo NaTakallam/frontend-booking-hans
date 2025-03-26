@@ -26,14 +26,18 @@ jobs:
           name: Install dependencies
           command: |
             cd ~/project/hans-signup
-            npm install
+            echo "Installing dependencies..."
+            npm install --no-audit --no-fund --progress=false
+            echo "Dependencies installed successfully"
           
       # Build the project
       - run:
           name: Build project
           command: |
             cd ~/project/hans-signup
+            echo "Building project..."
             npm run build
+            echo "Build completed successfully"
       
       # Add SSH key for server access
       - add_ssh_keys:
@@ -51,14 +55,25 @@ jobs:
       - run:
           name: Deploy to server
           command: |
-            # Create deployment directory if it doesn't exist
-            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o GlobalKnownHostsFile=/dev/null -o LogLevel=ERROR -p 56378 $SSH_USER@$SSH_HOST "mkdir -p $DEPLOY_PATH"
+            echo "Starting deployment..."
             
-            # Copy only the dist folder to server
-            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o GlobalKnownHostsFile=/dev/null -o LogLevel=ERROR -P 56378 -r ~/project/hans-signup/dist/* $SSH_USER@$SSH_HOST:$DEPLOY_PATH/
+            # Test SSH connection first
+            echo "Testing SSH connection..."
+            timeout 30 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o GlobalKnownHostsFile=/dev/null -o LogLevel=ERROR -p 56378 $SSH_USER@$SSH_HOST "echo 'SSH connection successful'"
+            
+            # Create deployment directory if it doesn't exist
+            echo "Creating deployment directory..."
+            timeout 30 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o GlobalKnownHostsFile=/dev/null -o LogLevel=ERROR -p 56378 $SSH_USER@$SSH_HOST "mkdir -p $DEPLOY_PATH"
+            
+            # Copy only the dist folder to server with progress
+            echo "Copying files to server..."
+            rsync -avz --timeout=30 -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o GlobalKnownHostsFile=/dev/null -o LogLevel=ERROR -p 56378" ~/project/hans-signup/dist/ $SSH_USER@$SSH_HOST:$DEPLOY_PATH/
             
             # Set proper permissions
-            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o GlobalKnownHostsFile=/dev/null -o LogLevel=ERROR -p 56378 $SSH_USER@$SSH_HOST "chmod -R 755 $DEPLOY_PATH"
+            echo "Setting permissions..."
+            timeout 30 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o GlobalKnownHostsFile=/dev/null -o LogLevel=ERROR -p 56378 $SSH_USER@$SSH_HOST "chmod -R 755 $DEPLOY_PATH"
+            
+            echo "Deployment completed successfully"
 
 workflows:
   version: 2
