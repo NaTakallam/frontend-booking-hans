@@ -100,15 +100,17 @@ jobs:
             fi
             
             # Verify dist directory exists
-            if [ ! -d "~/project/hans-signup/dist" ]; then
+            echo "Checking dist directory..."
+            if [ ! -d "/home/circleci/project/hans-signup/dist" ]; then
               echo "Error: dist directory not found"
-              ls -la ~/project/hans-signup/
+              echo "Current directory contents:"
+              ls -la /home/circleci/project/hans-signup/
               exit 1
             fi
             
             # Copy only the dist folder to server with progress
             echo "Copying files to server..."
-            if ! rsync -avz --timeout=30 --delete -e ssh ~/project/hans-signup/dist/ $SSH_HOST:$DEPLOY_PATH/; then
+            if ! rsync -avz --timeout=30 --delete -e ssh /home/circleci/project/hans-signup/dist/ $SSH_HOST:$DEPLOY_PATH/; then
               echo "Error: Failed to copy files to server"
               exit 1
             fi
