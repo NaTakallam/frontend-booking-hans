@@ -143,4 +143,4 @@ workflows:
       - deploy:
           filters:
             branches:
-              only: circleci-project-setup  # Deploy only when changes are pushed to main branch 
+              only: main  # Deploy only when changes are pushed to main branch 
