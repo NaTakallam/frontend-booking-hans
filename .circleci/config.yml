@@ -13,7 +13,9 @@ jobs:
           command: npm install
           
       # Build the project
-      
+      - run:
+          name: Build project
+          command: npm run build
       
       # Add SSH key for server access
       - add_ssh_keys:
@@ -32,17 +34,13 @@ jobs:
           name: Deploy to server
           command: |
             # Create deployment directory if it doesn't exist
-            ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "mkdir -p $DEPLOY_PATH"
+            ssh -o StrictHostKeyChecking=no -p 56378 $SSH_USER@$SSH_HOST "mkdir -p $DEPLOY_PATH"
             
             # Copy only the dist folder to server
-            scp -o StrictHostKeyChecking=no -r dist/* $SSH_USER@$SSH_HOST:$DEPLOY_PATH/
+            scp -o StrictHostKeyChecking=no -P 56378 -r dist/* $SSH_USER@$SSH_HOST:$DEPLOY_PATH/
             
             # Set proper permissions
-            ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "chmod -R 755 $DEPLOY_PATH"
-
-      - run:
-          name: Build project
-          command: npm run build
+            ssh -o StrictHostKeyChecking=no -p 56378 $SSH_USER@$SSH_HOST "chmod -R 755 $DEPLOY_PATH"
 
 workflows:
   version: 2
@@ -51,4 +49,4 @@ workflows:
       - deploy:
           filters:
             branches:
-              only: main  # Deploy only when changes are pushed to main branch 
+              only: circleci-project-setup  # Deploy only when changes are pushed to main branch 
