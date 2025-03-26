@@ -40,29 +40,25 @@ jobs:
           fingerprints:
             - "${SSH_KEY_FINGERPRINT}"
             
-      # Install SSH client and configure
+      # Install SSH client
       - run:
-          name: Configure SSH
+          name: Install SSH client
           command: |
             sudo apt-get update
             sudo apt-get install -y openssh-client
-            mkdir -p ~/.ssh
-            touch ~/.ssh/known_hosts
-            chmod 600 ~/.ssh/known_hosts
-            ssh-keyscan -H -p 56378 $SSH_HOST >> ~/.ssh/known_hosts
             
       # Deploy to server
       - run:
           name: Deploy to server
           command: |
             # Create deployment directory if it doesn't exist
-            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p 56378 $SSH_USER@$SSH_HOST "mkdir -p $DEPLOY_PATH"
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o GlobalKnownHostsFile=/dev/null -o LogLevel=ERROR -p 56378 $SSH_USER@$SSH_HOST "mkdir -p $DEPLOY_PATH"
             
             # Copy only the dist folder to server
-            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -P 56378 -r ~/project/hans-signup/dist/* $SSH_USER@$SSH_HOST:$DEPLOY_PATH/
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o GlobalKnownHostsFile=/dev/null -o LogLevel=ERROR -P 56378 -r ~/project/hans-signup/dist/* $SSH_USER@$SSH_HOST:$DEPLOY_PATH/
             
             # Set proper permissions
-            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p 56378 $SSH_USER@$SSH_HOST "chmod -R 755 $DEPLOY_PATH"
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o GlobalKnownHostsFile=/dev/null -o LogLevel=ERROR -p 56378 $SSH_USER@$SSH_HOST "chmod -R 755 $DEPLOY_PATH"
 
 workflows:
   version: 2
