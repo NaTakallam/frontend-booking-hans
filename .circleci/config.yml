@@ -3,74 +3,52 @@ version: 2.1
 jobs:
   deploy:
     docker:
-      - image: cimg/base:current
-
+      - image: cimg/node:lts
     steps:
       - checkout
-
-      # Add SSH key from CircleCI environment variables (your private key)
+      
+      # Install dependencies
+      - run:
+          name: Install dependencies
+          command: npm install
+          
+      # Build the project
+      
+      
+      # Add SSH key for server access
       - add_ssh_keys:
           fingerprints:
-            - "SHA256:kWkJodJE0GxCFhIViAHHaekf7Vqm7HrUzPd+4QcNzDI"
-
-      # Create the ~/.ssh directory if it doesn't exist, and set correct permissions
+            - "${SSH_KEY_FINGERPRINT}"
+            
+      # Install SSH client
       - run:
-          name: "Create SSH directory and set permissions"
-          command: |
-            mkdir -p ~/.ssh
-            chmod 700 ~/.ssh
-
-      # Remove the old host key from known_hosts (if it exists)
-      # - run:
-      #     name: "Remove old host key"
-      #     command: |
-      #       ssh-keygen -R 209.182.239.192 || true  # Adding `|| true` ensures it doesn't fail if the host isn't present
-
-      # Add the new server host key to known_hosts
-      - run:
-          name: "Add server to known_hosts"
-          command: |
-            ssh-keyscan -p 56378 -H 209.182.239.192 >> ~/.ssh/known_hosts
-            chmod 600 ~/.ssh/known_hosts
-
-      # Test SSH connection to the server (this should prompt for the host key verification only once)
-      # - run:
-      #     name: "Test SSH connection"
-      #     command: |
-      #       ssh root@209.182.239.192 -p 56378 "echo 'Connection successful'"
-      - run:
-          name: "Add GitHub to Known Hosts"
-          command: |
-            ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
-            chmod 600 ~/.ssh/known_hosts
-
-      - run:
-          name: "Copy files to server"
-          command: |
-            scp -P 56378 -r ${HOME}/project/* root@209.182.239.192:/home/Booking
-
-          
-      # Install rsync
-      - run:
-          name: "Install rsync"
+          name: Install SSH client
           command: |
             sudo apt-get update
-            sudo apt-get install -y rsync
-      
-  
-
-  
+            sudo apt-get install -y openssh-client
+            
+      # Deploy to server
       - run:
-          name: "Deploy Project Files with rsync"
+          name: Deploy to server
           command: |
-            rsync -av --checksum -e "ssh -p 56378" ${HOME}/project/ root@209.182.239.192:/home/Booking
+            # Create deployment directory if it doesn't exist
+            ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "mkdir -p $DEPLOY_PATH"
+            
+            # Copy only the dist folder to server
+            scp -o StrictHostKeyChecking=no -r dist/* $SSH_USER@$SSH_HOST:$DEPLOY_PATH/
+            
+            # Set proper permissions
+            ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "chmod -R 755 $DEPLOY_PATH"
 
-
-
-
+      - run:
+          name: Build project
+          command: npm run build
 
 workflows:
   version: 2
-  deploy_workflow:
+  deploy:
     jobs:
-      - deploy
+      - deploy:
+          filters:
+            branches:
+              only: main  # Deploy only when changes are pushed to main branch 
