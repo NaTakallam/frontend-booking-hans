@@ -7,7 +7,7 @@ const approaches = [
   { title: 'A mix of both', description: 'Balanced learning', icon: '⚖️', value: 'both' },
 ];
 
-const SkillsForm = () => {
+const TypeForm = () => {
   const { formData, setFormData } = useFormData();
 
   useEffect(() => {
@@ -77,4 +77,4 @@ const SkillsForm = () => {
   );
 };
 
-export default SkillsForm;
+export default TypeForm;

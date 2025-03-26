@@ -9,7 +9,7 @@ const topicsList = [
   { label: '📺Media / Cinema / TV Shows', value: 'Media / Cinema / TV Shows', width: 'w-full' },
 ];
 
-const TopicSelector = () => {
+const TopicsForm = () => {
   const { formData, setFormData } = useFormData();
   const selectedTopics = formData.topic || [];
   const selectedField = formData.field_of_study?.[0] || '';
@@ -108,5 +108,5 @@ const TopicSelector = () => {
   );
 };
 
-export default TopicSelector;
+export default TopicsForm;
 

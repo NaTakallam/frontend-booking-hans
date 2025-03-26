@@ -28,7 +28,7 @@ const skills = [
   },
 ];
 
-const SkillSelector = () => {
+const SkillsForm = () => {
   const { formData, setFormData } = useFormData();
   const selectedSkills = formData.skills || [];
 
@@ -90,4 +90,4 @@ const SkillSelector = () => {
   );
 };
 
-export default SkillSelector;
+export default SkillsForm;

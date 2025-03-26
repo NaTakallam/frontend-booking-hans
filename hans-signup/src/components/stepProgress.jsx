@@ -1,24 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import ntkLogo from '/NaTakallam-logo-2.png'
 import { useFormData } from '../components/FormDataContext'; // adjust path if needed
+import { useNavigate } from 'react-router-dom';
 
 
 const StepProgress = ({ currentStep, setCurrentStep }) => {
   const totalSteps = 5;
+  const navigate = useNavigate();
+
   const steps = ['levelForm', 'topicsForm', 'typeForm', 'skillsForm', 'availabilityForm']; // Step names
-  
+const componentsMap = {
+  levelForm: () => import('./levelForm'),
+  topicsForm: () => import('./topicsForm'),
+  typeForm: () => import('./typeForm'),
+  skillsForm: () => import('./skillsForm'),
+  availabilityForm: () => import('./availabilityForm'),
+}; 
   const [Component, setComponent] = useState(null); // State to hold dynamically imported component
   const { formData, setFormData } = useFormData(); // ✅ access form data
   // Dynamically import the correct component based on the current step
   useEffect(() => {
-    const loadComponent = async () => {
-      const stepName = steps[currentStep];
-      const component = await import(`../components/${capitalizeFirstLetter(stepName)}`);
+  const loadComponent = async () => {
+    const stepName = steps[currentStep];
+    if (componentsMap[stepName]) {
+      const component = await componentsMap[stepName]();
       setComponent(() => component.default);
-    };
+    } else {
+      console.error(`Component not found for step: ${stepName}`);
+    }
+  };
 
-    loadComponent();
-  }, [currentStep]);
+  loadComponent();
+}, [currentStep]);
 
   const getStepClass = (stepIndex) => {
     if (stepIndex === currentStep) {
@@ -58,31 +71,32 @@ const StepProgress = ({ currentStep, setCurrentStep }) => {
     } else {
       console.log("Final availability from modal:", formData.availability);
     }
+    navigate('/loading', { state: { formData } });
 
     // alert('Form Submitted');
-      try {
-        const response = await fetch('https://ml.natakallam.com/api/matching-teacher-schedules', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
+      // try {
+      //   const response = await fetch('https://ml.natakallam.com/api/matching-teacher-schedules', {
+      //     method: 'POST',
+      //     headers: {
+      //       'Content-Type': 'application/json',
+      //     },
+      //     body: JSON.stringify(formData),
+      //   });
       
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error('Submission failed:', errorData);
-          alert('Failed to submit the form. Please try again.');
-        } else {
-          const result = await response.json();
-          console.log('Submission successful:', result);
-          alert('Form successfully submitted!');
-          // Optionally redirect or reset form here
-        }
-      } catch (error) {
-        console.error('An error occurred during submission:', error);
-        alert('An unexpected error occurred. Please try again later.');
-      }
+      //   if (!response.ok) {
+      //     const errorData = await response.json();
+      //     console.error('Submission failed:', errorData);
+      //     alert('Failed to submit the form. Please try again.');
+      //   } else {
+      //     const result = await response.json();
+      //     console.log('Submission successful:', result);
+      //     alert('Form successfully submitted!');
+      //     // Optionally redirect or reset form here
+      //   }
+      // } catch (error) {
+      //   console.error('An error occurred during submission:', error);
+      //   alert('An unexpected error occurred. Please try again later.');
+      // }
     } else {
       setCurrentStep(Math.min(currentStep + 1, totalSteps - 1));
     }

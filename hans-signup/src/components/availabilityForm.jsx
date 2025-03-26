@@ -119,13 +119,29 @@ export default function AvailabilityForm() {
   };
 
   const handleOpenModal = () => {
-    if (formData.availability.length > 0) {
-      setCustomSlots(formData.availability);
+    if (formData.availability?.length > 0) {
+      const mapped = formData.availability.reduce((acc, curr) => {
+        const existing = acc.find(
+          (s) => s.from === curr.start_time && s.to === curr.end_time
+        );
+        const dayOption = daysOptions.find(d => d.value === String(curr.day_index));
+        if (existing && dayOption) {
+          existing.days.push(dayOption);
+        } else if (dayOption) {
+          acc.push({
+            days: [dayOption],
+            from: curr.start_time,
+            to: curr.end_time,
+          });
+        }
+        return acc;
+      }, []);
+      setCustomSlots(mapped);
     } else {
       setCustomSlots([{ days: [], from: "", to: "" }]);
     }
     setIsModalOpen(true);
-  };
+  };  
   useEffect(() => {
     setFormData((prev) => ({
       ...prev,
@@ -250,11 +266,12 @@ export default function AvailabilityForm() {
 
         <p className="mt-6 text-sm text-gray-600">
           Prefer a custom time?{" "}
+          Prefer a custom time?{" "}
           <button
             onClick={handleOpenModal}
             className="text-green-600 underline"
           >
-            Set your availability
+            {formData.availability?.length > 0 ? "Edit availability" : "Set your availability"}
           </button>
         </p>
       </div>
