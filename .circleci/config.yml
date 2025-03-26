@@ -108,11 +108,33 @@ jobs:
               exit 1
             fi
             
-            # Copy only the dist folder to server with progress
-            echo "Copying files to server..."
-            if ! rsync -avz --timeout=30 --delete -e ssh /home/circleci/project/hans-signup/dist/ $SSH_HOST:$DEPLOY_PATH/; then
-              echo "Error: Failed to copy files to server"
-              exit 1
+            # Try to install rsync on the server
+            echo "Checking for rsync on server..."
+            if ! ssh $SSH_HOST "which rsync"; then
+              echo "Installing rsync on server..."
+              if ! ssh $SSH_HOST "sudo apt-get update && sudo apt-get install -y rsync"; then
+                echo "Warning: Failed to install rsync on server, falling back to scp"
+                # Fallback to scp
+                echo "Copying files using scp..."
+                if ! scp -r /home/circleci/project/hans-signup/dist/* $SSH_HOST:$DEPLOY_PATH/; then
+                  echo "Error: Failed to copy files to server using scp"
+                  exit 1
+                fi
+              else
+                echo "rsync installed successfully on server"
+                # Try rsync again
+                echo "Copying files using rsync..."
+                if ! rsync -avz --timeout=30 --delete -e ssh /home/circleci/project/hans-signup/dist/ $SSH_HOST:$DEPLOY_PATH/; then
+                  echo "Error: Failed to copy files to server using rsync"
+                  exit 1
+                fi
+              fi
+            else
+              echo "rsync found on server, copying files..."
+              if ! rsync -avz --timeout=30 --delete -e ssh /home/circleci/project/hans-signup/dist/ $SSH_HOST:$DEPLOY_PATH/; then
+                echo "Error: Failed to copy files to server using rsync"
+                exit 1
+              fi
             fi
             
             # Set proper permissions
