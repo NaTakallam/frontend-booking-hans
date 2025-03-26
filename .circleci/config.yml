@@ -1,0 +1,146 @@
+version: 2.1
+
+jobs:
+  deploy:
+    docker:
+      - image: cimg/node:lts
+    steps:
+      - checkout:
+          path: ~/project
+          
+      # Verify repository contents
+      - run:
+          name: Verify repository contents
+          command: |
+            pwd
+            ls -la
+            if [ ! -f hans-signup/package.json ]; then
+              echo "Error: package.json not found in hans-signup directory!"
+              echo "Current directory contents:"
+              ls -la
+              exit 1
+            fi
+      
+      # Add SSH key for server access
+      - add_ssh_keys:
+          fingerprints:
+            - "${SSH_KEY_FINGERPRINT}"
+            
+      # Install SSH client and rsync
+      - run:
+          name: Install required packages
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y openssh-client rsync
+            
+      # Configure SSH
+      - run:
+          name: Configure SSH
+          command: |
+            mkdir -p ~/.ssh
+            chmod 700 ~/.ssh
+            echo "Host $SSH_HOST" > ~/.ssh/config
+            echo "  HostName $SSH_HOST" >> ~/.ssh/config
+            echo "  User $SSH_USER" >> ~/.ssh/config
+            echo "  Port 56378" >> ~/.ssh/config
+            echo "  IdentityFile ~/.ssh/id_rsa" >> ~/.ssh/config
+            echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+            chmod 600 ~/.ssh/config
+            
+      # Deploy to server
+      - run:
+          name: Deploy to server
+          command: |
+            echo "Starting deployment..."
+            
+            # Verify environment variables
+            echo "Checking environment variables..."
+            if [ -z "$SSH_USER" ] || [ -z "$SSH_HOST" ] || [ -z "$DEPLOY_PATH" ]; then
+              echo "Error: Required environment variables are not set"
+              echo "SSH_USER: $SSH_USER"
+              echo "SSH_HOST: $SSH_HOST"
+              echo "DEPLOY_PATH: $DEPLOY_PATH"
+              exit 1
+            fi
+            
+            # Test SSH connection first
+            echo "Testing SSH connection..."
+            if ! ssh -v $SSH_HOST "echo 'SSH connection successful'"; then
+              echo "Error: Failed to establish SSH connection"
+              echo "Please verify:"
+              echo "1. SSH key is properly added to CircleCI"
+              echo "2. SSH key is added to server's authorized_keys"
+              echo "3. Server user has proper permissions"
+              exit 1
+            fi
+            
+            # Create deployment directory if it doesn't exist
+            echo "Creating deployment directory..."
+            if ! ssh $SSH_HOST "mkdir -p $DEPLOY_PATH"; then
+              echo "Error: Failed to create deployment directory"
+              exit 1
+            fi
+            
+            # Try to install rsync on the server
+            echo "Checking for rsync on server..."
+            if ! ssh $SSH_HOST "which rsync"; then
+              echo "Installing rsync on server..."
+              if ! ssh $SSH_HOST "sudo apt-get update && sudo apt-get install -y rsync"; then
+                echo "Warning: Failed to install rsync on server, falling back to scp"
+                # Fallback to scp
+                echo "Copying files using scp..."
+                if ! scp -r /home/circleci/project/hans-signup/* $SSH_HOST:$DEPLOY_PATH/; then
+                  echo "Error: Failed to copy files to server using scp"
+                  exit 1
+                fi
+              else
+                echo "rsync installed successfully on server"
+                # Try rsync again
+                echo "Copying files using rsync..."
+                if ! rsync -avz --timeout=30 --delete -e ssh /home/circleci/project/hans-signup/ $SSH_HOST:$DEPLOY_PATH/; then
+                  echo "Error: Failed to copy files to server using rsync"
+                  exit 1
+                fi
+              fi
+            else
+              echo "rsync found on server, copying files..."
+              if ! rsync -avz --timeout=30 --delete -e ssh /home/circleci/project/hans-signup/ $SSH_HOST:$DEPLOY_PATH/; then
+                echo "Error: Failed to copy files to server using rsync"
+                exit 1
+              fi
+            fi
+            
+            # Set proper permissions
+            echo "Setting permissions..."
+            if ! ssh $SSH_HOST "chmod -R 755 $DEPLOY_PATH"; then
+              echo "Error: Failed to set permissions"
+              exit 1
+            fi
+            
+            # Install Node.js on server if not present
+            echo "Checking for Node.js on server..."
+            if ! ssh $SSH_HOST "which node"; then
+              echo "Installing Node.js on server..."
+              if ! ssh $SSH_HOST "curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - && sudo apt-get install -y nodejs"; then
+                echo "Error: Failed to install Node.js on server"
+                exit 1
+              fi
+            fi
+            
+            # Install dependencies and build on server
+            echo "Installing dependencies and building on server..."
+            if ! ssh $SSH_HOST "cd $DEPLOY_PATH && npm install --no-audit --no-fund --progress=false && npm run build"; then
+              echo "Error: Failed to install dependencies or build on server"
+              exit 1
+            fi
+            
+            echo "Deployment and build completed successfully"
+
+workflows:
+  version: 2
+  deploy:
+    jobs:
+      - deploy:
+          filters:
+            branches:
+              only: circleci-project-setup  # Deploy only when changes are pushed to main branch 
