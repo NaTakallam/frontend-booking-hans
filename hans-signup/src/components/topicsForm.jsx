@@ -4,7 +4,7 @@ import { useFormData } from './FormDataContext'; // adjust path if needed
 const topicsList = [
   { label: '🗳️Politics / Current affairs', value: 'Politics / Current affairs', width: 'w-[255px]' },
   { label: '🏡Daily Life', value: 'Daily Life', width: 'w-[145px]' },
-  { label: '🎭 Art / Literature / MusicArt ', value: 'Art / Literature / MusicArt', width: 'w-[255px]' },
+  { label: '🎭 Art / Literature / Music ', value: 'Art / Literature / Music', width: 'w-[255px]' },
   { label: '⚽Sports', value: 'Sports', width: 'w-[145px]' },
   { label: '📺Media / Cinema / TV Shows', value: 'Media / Cinema / TV Shows', width: 'w-full' },
 ];
