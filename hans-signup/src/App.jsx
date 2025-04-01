@@ -1,12 +1,15 @@
-import { useState } from 'react'
-import './App.css'
-import './index.css'
+import { useState, useEffect } from 'react';
+import './App.css';
+import './index.css';
 import StartForm from "./components/startForm"; 
 import TestimonialComponent from "./components/testimonials"; 
 import BookingCalendar from './components/ScheduleCalendar';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LoadingPage from './components/loadingPage';
 import LanguagePartners from './components/LanguagePartners';
+import SHA256 from 'crypto-js/sha256';
+
+const hashedPassword = '6b034334c02d96d823c4eae3122cf759dcff5b0e2eec2d9f6c06b4d1aa626b7';
 
 const schedule = {
   "1": [{ "start_time": "07:00:00", "end_time": "12:00:00" }, { "start_time": "14:00:00", "end_time": "18:00:00" }],
@@ -18,40 +21,56 @@ const schedule = {
   "7": [{ "start_time": "15:00:00", "end_time": "18:00:00" }]
 };
 
-// const App = () => {
+const App = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
 
-//   return (
-//     <div className="flex h-screen font-fellix">
-//       {/* Left Section (Forms) */}
-//       <StartForm />
-//       {/* Right Section (Testimonial) */}
-//       <TestimonialComponent/>
-//       {/* <BookingCalendar schedule={schedule} /> */}
-      
-//     </div>
-    
-//   );
-// };
+  const handleLogin = () => {
+    const inputHash = SHA256(passwordInput).toString();
+    if (inputHash === hashedPassword) {
+      setIsAuthenticated(true);
+    } else {
+      alert('Incorrect password');
+    }
+  };
 
-function App() {
+  if (!isAuthenticated) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gray-100">
+        <div className="bg-white p-6 rounded shadow-md text-center">
+          <h2 className="text-xl mb-4 font-semibold">🔐 Enter Password</h2>
+          <input
+            type="password"
+            value={passwordInput}
+            onChange={(e) => setPasswordInput(e.target.value)}
+            className="border rounded px-4 py-2 w-full mb-4"
+          />
+          <button
+            onClick={handleLogin}
+            className="bg-green-600 text-white px-4 py-2 rounded"
+          >
+            Enter
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Router>
       <Routes>
         <Route path="/" element={
           <div className="flex h-screen font-fellix">
-       {/* Left Section (Forms) */}
-       <StartForm />
-       {/* Right Section (Testimonial) */}
-       <TestimonialComponent/>
-       {/* <BookingCalendar schedule={schedule} /> */}
-      
-     </div>} />
+            <StartForm />
+            <TestimonialComponent />
+          </div>
+        } />
         <Route path="/loading" element={<LoadingPage />} />
         <Route path="/results" element={<LanguagePartners />} />
         <Route path="/booking" element={<BookingCalendar schedule={schedule} />} />
       </Routes>
     </Router>
   );
-}
+};
 
 export default App;

@@ -6,10 +6,9 @@ import {
   addDays,
   startOfWeek,
   isBefore,
-  parseISO,
   addHours,
 } from 'date-fns';
-import { useFormData } from './FormDataContext'; // ✅ Adjust path if needed
+import { useFormData } from './FormDataContext'; // ✅ Adjust path as needed
 
 const dayNames = [
   'Monday',
@@ -21,19 +20,25 @@ const dayNames = [
   'Sunday',
 ];
 
+const DEFAULT_TIMEZONE = 'Asia/Beirut';
+
 const ScheduleCalendar = ({ schedule }) => {
   const { formData, setFormData } = useFormData();
-  const [weekStart, setWeekStart] = useState(
-    startOfWeek(new Date(), { weekStartsOn: 1 })
-  );
+  const [weekStart, setWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [activeDayIndex, setActiveDayIndex] = useState(null);
   const [selectedSlots, setSelectedSlots] = useState([]);
-  const [initialSelectedDay, setInitialSelectedDay] = useState(null);
 
   const now = new Date();
   const nowPlus24 = addHours(now, 24);
 
-  // 🌍 Timezone options
+  // Ensure default timezone is set in formData
+  useEffect(() => {
+    if (!formData.timezone) {
+      setFormData((prev) => ({ ...prev, timezone: DEFAULT_TIMEZONE }));
+    }
+  }, []);
+
+  // Timezone dropdown options
   const timeOptions = moment.tz.names().map((tz) => ({
     value: tz,
     label: `🌍 ${tz} (GMT ${moment.tz(tz).format('Z')})`,
@@ -42,9 +47,7 @@ const ScheduleCalendar = ({ schedule }) => {
   const selectedTime = formData.timezone
     ? {
         value: formData.timezone,
-        label: `🌍 ${formData.timezone} (GMT ${moment
-          .tz(formData.timezone)
-          .format('Z')})`,
+        label: `🌍 ${formData.timezone} (GMT ${moment.tz(formData.timezone).format('Z')})`,
       }
     : null;
 
@@ -55,23 +58,27 @@ const ScheduleCalendar = ({ schedule }) => {
     }));
   };
 
-  // 🕓 Build hourly slots
-  const generateTimeSlots = (start, end) => {
+  // Convert schedule time to selected timezone
+  const generateTimeSlots = (start, end, dateStr, userTz) => {
     const slots = [];
-    let startHour = parseInt(start.split(':')[0]);
-    let endHour = parseInt(end.split(':')[0]);
+    let startHour = parseInt(start.split(":")[0]);
+    let endHour = parseInt(end.split(":")[0]);
 
     for (let hour = startHour; hour < endHour; hour++) {
-      const from = `${hour.toString().padStart(2, '0')}:00`;
-      const to = `${(hour + 1).toString().padStart(2, '0')}:00`;
+      const original = moment.tz(`${dateStr} ${hour}:00:00`, DEFAULT_TIMEZONE);
+      const converted = original.clone().tz(userTz);
+      const from = converted.format("HH:00");
+      const to = converted.clone().add(1, 'hour').format("HH:00");
       slots.push({ from, to });
     }
 
     return slots;
   };
 
-  // 🎯 Auto-select first available day/time at least 24h from now
+  // Auto-select a valid day and slot at least 24h from now
   useEffect(() => {
+    if (!formData.timezone) return;
+
     let validDayFound = false;
 
     for (let i = 0; i < 7 && !validDayFound; i++) {
@@ -80,16 +87,17 @@ const ScheduleCalendar = ({ schedule }) => {
       const periods = schedule[i + 1] || [];
 
       for (let period of periods) {
-        const slots = generateTimeSlots(period.start_time, period.end_time);
+        const slots = generateTimeSlots(
+          period.start_time,
+          period.end_time,
+          dateStr,
+          formData.timezone
+        );
 
         for (let { from } of slots) {
           const slotStart = new Date(`${dateStr}T${from}:00`);
-          const slotTime = slotStart.getTime();
-          const thresholdTime = nowPlus24.getTime();
-
-          if (slotTime >= thresholdTime) {
+          if (slotStart.getTime() >= nowPlus24.getTime()) {
             setActiveDayIndex(i);
-            setInitialSelectedDay(i);
             validDayFound = true;
             break;
           }
@@ -98,13 +106,12 @@ const ScheduleCalendar = ({ schedule }) => {
         if (validDayFound) break;
       }
     }
-  }, [weekStart]);
+  }, [weekStart, formData.timezone]);
 
   const changeWeek = (direction) => {
     const shift = direction === 'next' ? 7 : -7;
     setWeekStart(addDays(weekStart, shift));
     setActiveDayIndex(null);
-    setInitialSelectedDay(null);
   };
 
   const toggleSlot = (date, slot) => {
@@ -115,7 +122,7 @@ const ScheduleCalendar = ({ schedule }) => {
   };
 
   const renderTimeSlots = (type) => {
-    if (activeDayIndex === null) return null;
+    if (activeDayIndex === null || !formData.timezone) return null;
 
     const day = activeDayIndex;
     const dateObj = addDays(weekStart, day);
@@ -134,33 +141,36 @@ const ScheduleCalendar = ({ schedule }) => {
     return (
       <div className="grid grid-cols-3 gap-3 my-3">
         {filtered.flatMap((period, i) =>
-          generateTimeSlots(period.start_time, period.end_time).map(
-            ({ from, to }, j) => {
-              const slot = `${from} - ${to}`;
-              const slotDateTime = new Date(`${dateStr}T${from}:00`);
-              const shouldHideSlot =
-                isThisWeek && slotDateTime.getTime() < nowPlus24.getTime();
+          generateTimeSlots(
+            period.start_time,
+            period.end_time,
+            dateStr,
+            formData.timezone
+          ).map(({ from, to }, j) => {
+            const slot = `${from} - ${to}`;
+            const slotDateTime = new Date(`${dateStr}T${from}:00`);
+            const shouldHideSlot =
+              isThisWeek && slotDateTime.getTime() < nowPlus24.getTime();
 
-              if (shouldHideSlot) return null;
+            if (shouldHideSlot) return null;
 
-              const id = `${dateStr}|${slot}`;
-              const selected = selectedSlots.includes(id);
+            const id = `${dateStr}|${slot}`;
+            const selected = selectedSlots.includes(id);
 
-              return (
-                <button
-                  key={`${i}-${j}`}
-                  onClick={() => toggleSlot(dateStr, slot)}
-                  className={`text-sm px-3 py-2 rounded-full border transition-all duration-200 ease-in-out ${
-                    selected
-                      ? 'bg-green-600 text-white border-green-600'
-                      : 'bg-white text-green-700 border-green-400 hover:bg-green-100'
-                  }`}
-                >
-                  {slot}
-                </button>
-              );
-            }
-          )
+            return (
+              <button
+                key={`${i}-${j}`}
+                onClick={() => toggleSlot(dateStr, slot)}
+                className={`text-sm px-3 py-2 rounded-full border transition-all duration-200 ease-in-out ${
+                  selected
+                    ? 'bg-green-600 text-white border-green-600'
+                    : 'bg-white text-green-700 border-green-400 hover:bg-green-100'
+                }`}
+              >
+                {slot}
+              </button>
+            );
+          })
         )}
       </div>
     );
@@ -208,7 +218,7 @@ const ScheduleCalendar = ({ schedule }) => {
         </button>
       </div>
 
-      {/* Day Buttons */}
+      {/* Day Selection */}
       <div className="grid grid-cols-7 text-center gap-2 mb-6">
         {dayNames.map((day, i) => {
           const date = addDays(weekStart, i);
