@@ -137,11 +137,18 @@ if (!partners.length) {
               <p><span className="text-black font-bold">Interest:</span> {partner.interest}</p>
             </div>
 
-            <button  onClick={() => navigate('/booking')} className="mt-4 w-full bg-[#7A1D1D] text-white m-0 rounded-[8px] text-sm font-bold flex items-center justify-center gap-2 font-fellix">
+            <button  onClick={() =>
+    navigate('/booking', {
+      state: {
+        schedule: partner.schedule,
+        tutorTimeZone: partner.time_zone,
+      },
+    })
+  } className="mt-4 w-full bg-[#7A1D1D] text-white m-0 rounded-[8px] text-sm font-bold flex items-center justify-center gap-2 font-fellix">
               <FaRegCalendarAlt />
               Book Now
             </button>
-
+            
             <div className="flex-grow mt-3 text-xs text-[#474747] leading-relaxed font-fellix">
               <div
                 ref={(el) => (descriptionRefs.current[index] = el)}

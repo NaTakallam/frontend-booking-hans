@@ -82,7 +82,7 @@ const transformToPartnerCards = (apiResponse) => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-full text-center font-fellix">
       <img src="/NaTakallam-logo-2.png" alt="Logo" className="w-[6em] h-[6em] mb-8 object-contain" />
-<FaSpinner className="animate-spin text-secondary" size={64} />
+<FaSpinner className="animate-spin text-secondary" size={64} /> 
 
       <p className="text-black text-2xl font-bold mt-4 px-4 transition-opacity duration-300 ease-in-out">
         {loadingMessages[messageIndex]}
