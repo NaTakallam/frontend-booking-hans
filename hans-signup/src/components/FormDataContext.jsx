@@ -6,7 +6,7 @@ export const FormDataProvider = ({ children }) => {
   // Load from localStorage if exists
   const initialData = JSON.parse(localStorage.getItem("formData")) || {
     level: "",
-    target_language: "English",
+    target_language: "",
     timezone: "",
     availability: [],
     topic: [],

@@ -6,10 +6,10 @@ import TestimonialComponent from "./components/testimonials";
 import BookingCalendar from './components/ScheduleCalendar';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LoadingPage from './components/loadingPage';
-import LanguagePartners from './components/LanguagePartners';
+import LanguagePartners from './components/languagePartners';
 import SHA256 from 'crypto-js/sha256';
 
-const hashedPassword = '6b034334c02d96d823c4eae3122cf759dcff5b0e2eec2d9f6c06b4d1aa626b7';
+const hashedPassword = '451c8838ca2c88a1caef9bdac36e192b45edaf1903afb4a10fdd6a20c7a5e8d0';
 
 const schedule = {
   "1": [{ "start_time": "07:00:00", "end_time": "12:00:00" }, { "start_time": "14:00:00", "end_time": "18:00:00" }],

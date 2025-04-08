@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { FaSpinner } from 'react-icons/fa';
 
 const loadingMessages = [
   "Finding your Language partner who will inspire you ...",
@@ -12,7 +13,26 @@ const LoadingPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { formData } = location.state || {};
+const transformToPartnerCards = (apiResponse) => {
+  return Object.entries(apiResponse).map(([id, data]) => {
+    const d = data.schedule_data;
 
+    return {
+      name: `${d.firstName} ${d.lastName}`,
+      image: `/placeholder-avatar.png`, // You can replace this with a real image URL if available
+      origin: d.country_of_origin?.[0] || 'Unknown',
+      location: d.city?.[0] || 'Unknown',
+      hobbies: d.common_skills?.join(', ') || '',
+      fieldOfStudy: d.common_field_of_study?.join(', ') || '—',
+      interest: d.common_topic?.join(', ') || '—',
+      description: d.short_bio?.[0] || 'No bio available.',
+      schedule: d.schedule,
+      total_percentage: data.total_percentage,
+      total_matched_hours: data.total_matched_hours,
+      time_zone: d.time_zone,
+    };
+  });
+};
   // ⏳ Loop through messages
   useEffect(() => {
     const interval = setInterval(() => {
@@ -40,9 +60,11 @@ const LoadingPage = () => {
         }
 
         console.log('✅ Submission successful:', result);
-
+	// 🔁 Transform for LanguagePartners view
+	const partners = transformToPartnerCards(result);
         // 🧭 Navigate to results page and pass data
-        navigate('/results', { state: { result } });
+        navigate('/results', { state: { result: { matches: partners } } });
+
 
       } catch (error) {
         console.error('An error occurred during submission:', error);
@@ -60,6 +82,8 @@ const LoadingPage = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-full text-center font-fellix">
       <img src="/NaTakallam-logo-2.png" alt="Logo" className="w-[6em] h-[6em] mb-8 object-contain" />
+<FaSpinner className="animate-spin text-secondary" size={64} />
+
       <p className="text-black text-2xl font-bold mt-4 px-4 transition-opacity duration-300 ease-in-out">
         {loadingMessages[messageIndex]}
       </p>

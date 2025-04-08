@@ -152,8 +152,8 @@ const ScheduleCalendar = ({ schedule }) => {
                   onClick={() => toggleSlot(dateStr, slot)}
                   className={`text-sm px-3 py-2 rounded-full border transition-all duration-200 ease-in-out ${
                     selected
-                      ? 'bg-green-600 text-white border-green-600'
-                      : 'bg-white text-green-700 border-green-400 hover:bg-green-100'
+                      ? 'bg-secondary text-white border-secondary'
+                      : 'bg-white text-secondary border-secondary hover:bg-secondary'
                   }`}
                 >
                   {slot}
@@ -193,7 +193,7 @@ const ScheduleCalendar = ({ schedule }) => {
       <div className="flex justify-between items-center mb-4">
         <button
           onClick={() => changeWeek('prev')}
-          className="text-xl px-3 py-1 text-green-600 rounded-full border border-green-600 hover:bg-green-100"
+          className="text-xl px-3 py-1 text-secondary rounded-full border border-secondary hover:bg-secondary"
         >
           ←
         </button>
@@ -202,7 +202,7 @@ const ScheduleCalendar = ({ schedule }) => {
         </h2>
         <button
           onClick={() => changeWeek('next')}
-          className="text-xl px-3 py-1 text-green-600 rounded-full border border-green-600 hover:bg-green-100"
+          className="text-xl px-3 py-1 text-secondary rounded-full border border-secondary hover:bg-secondary"
         >
           →
         </button>
@@ -224,8 +224,8 @@ const ScheduleCalendar = ({ schedule }) => {
                 !isTodayOrLater
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : isSelected
-                  ? 'bg-green-600 text-white'
-                  : 'hover:bg-green-100'
+                  ? 'bg-secondary text-white'
+                  : 'hover:bg-secondary'
               }`}
             >
               <span className="text-sm">{day}</span>
@@ -249,7 +249,7 @@ const ScheduleCalendar = ({ schedule }) => {
               onClick={() =>
                 alert(`Booking sessions:\n${selectedSlots.join('\n')}`)
               }
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full text-lg font-semibold"
+              className="bg-secondary hover:bg-secondary text-white px-6 py-3 rounded-full text-lg font-semibold"
             >
               Booking
             </button>

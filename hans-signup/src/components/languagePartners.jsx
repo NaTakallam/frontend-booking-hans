@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FiArrowRightCircle } from 'react-icons/fi';
 import { useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import { FaRegCalendarAlt } from 'react-icons/fa';
+import { FaRegQuestionCircle } from 'react-icons/fa';
 
 const partners = [
   {
@@ -43,23 +45,66 @@ export default function LanguagePartners() {
   const [expandedIndex, setExpandedIndex] = useState(null);
   const [overflowMap, setOverflowMap] = useState({});
   const descriptionRefs = useRef([]);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { result } = location.state || {};
+  const partners = result?.matches || [
+  {
+    name: 'Sadiqa .M',
+    image: '/Sadiqa.png',
+    origin: 'Iran',
+    location: 'Asylum Seeker',
+    hobbies: 'Reading, Running, Cooking',
+    fieldOfStudy: 'Engineering',
+    interest: 'Business & Management',
+    description:
+      'Sadiqa loves for her students to have fun and get acquainted with a different culture while learning! In her free time, she enjoys spending time with family, writing in her journal.',
+  },
+  {
+    name: 'Atefe Salim',
+    image: '/Atefe.png',
+    origin: 'Iran',
+    location: 'Asylum Seeker',
+    hobbies: 'Reading, Running',
+    fieldOfStudy: 'Engineering',
+    interest: 'Business & Management',
+    description:
+      'Atefe left her country to save her life and those of her family members. In her free time, she enjoys studying, reading books, listening to music, swimming and dancing and she loves volunteering for others. She is passionate about education and believes in the power of language to transform lives.',
+  },
+  {
+    name: 'Ayran Majer',
+    image: '/Ayran.png',
+    origin: 'Iran',
+    location: 'Asylum Seeker',
+    hobbies: 'Reading, Running',
+    fieldOfStudy: 'Engineering',
+    interest: 'Business & Management',
+    description:
+      'Aryan possesses a fifteen-year background in teaching Persian literature and language to both native and non-native speakers.',
+  },
+];
 
-  useEffect(() => {
-    const navigate = useNavigate();
-
-    const newOverflowMap = {};
-    descriptionRefs.current.forEach((ref, i) => {
-      if (ref && ref.scrollHeight > 80) {
-        newOverflowMap[i] = true;
-      }
-    });
-    setOverflowMap(newOverflowMap);
-  }, []);
+useEffect(() => {
+  const newOverflowMap = {};
+  descriptionRefs.current.forEach((ref, i) => {
+    if (ref && ref.scrollHeight > 80) {
+      newOverflowMap[i] = true;
+    }
+  });
+  setOverflowMap(newOverflowMap);
+}, [partners])
 
   const toggleShowMore = (index) => {
     setExpandedIndex(prevIndex => (prevIndex === index ? null : index));
   };
-
+if (!partners.length) {
+  return (
+    <div className="p-10 text-center">
+      <h2 className="text-2xl font-bold text-red-600">No matches found</h2>
+      <p>Please try again later.</p>
+    </div>
+  );
+}
   return (
     <div className="bg-white p-6 sm:p-6 max-w-5xl mx-auto">
       <h2 className="text-xl sm:text-2xl font-bold mb-2">Your English Language Partner</h2>
@@ -81,7 +126,7 @@ export default function LanguagePartners() {
 
             <div className="flex justify-between items-start mb-1">
               <h3 className="text-xl sm:text-2xl font-bold text-[#007451] mb-4">{partner.name}</h3>
-              <span className="text-yellow-600 text-xl">🛈</span>
+              <span className="text-yellow-600 text-xl"><FaRegQuestionCircle size={24} /></span>
             </div>
 
             <div className="text-xs sm:text-sm text-black font-fellix space-y-[2px]">
@@ -93,7 +138,7 @@ export default function LanguagePartners() {
             </div>
 
             <button  onClick={() => navigate('/booking')} className="mt-4 w-full bg-[#7A1D1D] text-white m-0 rounded-[8px] text-sm font-bold flex items-center justify-center gap-2 font-fellix">
-              <img src="CalendarPlus.png" alt="Calendar" className="w-4 h-4" />
+              <FaRegCalendarAlt />
               Book Now
             </button>
 
@@ -120,10 +165,10 @@ export default function LanguagePartners() {
 
             <div className="mt-10 flex justify-between font-bold bg-[#FbF2F1] rounded-[12px] items-center text-[11px] text-[#283021] pt-2 pr-5 pb-2 pl-5">
               <div>
-                <strong className="text-[#6F746A] font-bold font-fellix">Matched Availability:</strong><br />10 Hours / Week
+                <strong className="text-[#6F746A] font-bold font-fellix">Matched Availability:</strong><br />{partner.total_matched_hours} Hours / Week
               </div>
               <div>
-                <strong className="text-[#6F746A] font-bold font-fellix">Avg. Match Rate:</strong><br />90%
+                <strong className="text-[#6F746A] font-bold font-fellix">Avg. Match Rate:</strong><br />{partner.total_percentage}%
               </div>
             </div>
           </div>

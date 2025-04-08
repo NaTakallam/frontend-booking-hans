@@ -21,8 +21,8 @@ export default function AvailabilityForm() {
   const timeDropdownOptions = Array.from({ length: 24 }, (_, index) => {
     const hour = index < 10 ? `0${index}` : `${index}`;
     return {
-      value: `${hour}:00`,
-      label: `${hour}:00`,
+      value: `${hour}:00:00`,
+      label: `${hour}:00:00`,
     };
   });
 
