@@ -15,9 +15,14 @@ const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satur
 
 const ScheduleCalendar = () => {
   const { formData, setFormData } = useFormData();
+  const [sessionType, setSessionType] = useState('Trial'); // default to Trial
   const location = useLocation();
-  const { schedule: tutorSchedule, tutorTimeZone } = location.state || {};
-
+  const { schedule: initialSchedule, allTutors, selectedTutor } = location.state || {};
+  const [activeTutor, setActiveTutor] = useState(selectedTutor);
+  const [tutorList, setTutorList] = useState(allTutors || []);
+  const currentTutor = tutorList.find((t) => t.name === activeTutor);
+  const tutorSchedule = currentTutor?.schedule;
+  const tutorTimeZone = currentTutor?.time_zone;
   const [convertedSchedule, setConvertedSchedule] = useState({});
   const [weekStart, setWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [activeDayIndex, setActiveDayIndex] = useState(null);
@@ -38,29 +43,45 @@ const ScheduleCalendar = () => {
     setFormData((prev) => ({ ...prev, timezone: selectedOption.value }));
   };
 
-  const convertSchedule = () => {
-    if (!tutorSchedule || !tutorTimeZone || !formData.timezone) return;
-    const newSchedule = {};
+  // const convertSchedule = () => {
+  //   if (!tutorSchedule || !tutorTimeZone || !formData.timezone) return;
+  //   const newSchedule = {};
 
-    for (const [dayIndex, slots] of Object.entries(tutorSchedule)) {
-      const convertedSlots = slots.map(({ start_time, end_time }) => {
-        const date = moment().day(parseInt(dayIndex)).startOf('day');
-        const start = moment.tz(`${date.format('YYYY-MM-DD')}T${start_time}`, tutorTimeZone).tz(formData.timezone);
-        const end = moment.tz(`${date.format('YYYY-MM-DD')}T${end_time}`, tutorTimeZone).tz(formData.timezone);
+  //   for (const [dayIndex, slots] of Object.entries(tutorSchedule)) {
+  //     const convertedSlots = slots.map(({ start_time, end_time }) => {
+  //       const date = moment().day(parseInt(dayIndex)).startOf('day');
+  //       const start = moment.tz(`${date.format('YYYY-MM-DD')}T${start_time}`, tutorTimeZone).tz(formData.timezone);
+  //       const end = moment.tz(`${date.format('YYYY-MM-DD')}T${end_time}`, tutorTimeZone).tz(formData.timezone);
 
-        return {
-          start_time: start.format('HH:mm:ss'),
-          end_time: end.format('HH:mm:ss'),
-        };
-      });
-      newSchedule[dayIndex] = convertedSlots;
-    }
-    setConvertedSchedule(newSchedule);
-  };
+  //       return {
+  //         start_time: start.format('HH:mm:ss'),
+  //         end_time: end.format('HH:mm:ss'),
+  //       };
+  //     });
+  //     newSchedule[dayIndex] = convertedSlots;
+  //   }
+  //   setConvertedSchedule(newSchedule);
+  // };
 
-  useEffect(() => {
-    convertSchedule();
-  }, [formData.timezone]);
+    useEffect(() => {
+      if (!currentTutor?.schedule || !currentTutor.time_zone || !formData.timezone) return;
+      const newSchedule = {};
+
+      for (const [dayIndex, slots] of Object.entries(currentTutor.schedule)) {
+        const convertedSlots = slots.map(({ start_time, end_time }) => {
+          const date = moment().day(parseInt(dayIndex)).startOf('day');
+          const start = moment.tz(`${date.format('YYYY-MM-DD')}T${start_time}`, currentTutor.time_zone).tz(formData.timezone);
+          const end = moment.tz(`${date.format('YYYY-MM-DD')}T${end_time}`, currentTutor.time_zone).tz(formData.timezone);
+
+          return {
+            start_time: start.format('HH:mm:ss'),
+            end_time: end.format('HH:mm:ss'),
+          };
+        });
+        newSchedule[dayIndex] = convertedSlots;
+      }
+      setConvertedSchedule(newSchedule);
+    }, [currentTutor, formData.timezone]);
 
   useEffect(() => {
     let found = false;
@@ -93,7 +114,18 @@ const ScheduleCalendar = () => {
 
   const toggleSlot = (date, slot) => {
     const id = `${date}|${slot}`;
-    setSelectedSlots((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
+
+    if (sessionType === 'Trial') {
+      // If already selected, unselect; otherwise replace selection with this one
+      setSelectedSlots((prev) =>
+        prev.includes(id) ? [] : [id]
+      );
+    } else {
+      // Multiple session logic
+      setSelectedSlots((prev) =>
+        prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+      );
+    }
   };
 
   const renderTimeSlots = (type) => {
@@ -137,23 +169,72 @@ const ScheduleCalendar = () => {
   };
 
   return (
+  <div className="font-fellix">
     <div className="p-6 max-w-5xl mx-auto">
-      <div className="mb-6">
-        <label className="block text-gray-700 font-medium mb-2">Select your timezone</label>
-        <Select
-          options={timeOptions}
-          value={selectedTime}
-          onChange={handleTimeZoneChange}
-          className="max-w-md"
-        />
+      <div className="flex flex-wrap sm:flex-nowrap gap-4 mb-6">
+        {/* Session Type Select */}
+        <div className="w-full sm:w-1/3">
+          <label className="block text-gray-700 font-medium mb-2">Session Type</label>
+          <Select
+            options={[
+              { value: 'Trial', label: 'Trial Session - 1 Hour' },
+              { value: 'Multiple', label: 'Multiple Sessions' }
+            ]}
+            value={{ value: sessionType, label: sessionType === 'Trial' ? 'Trial Session - 1 Hour' : 'Multiple Sessions' }}
+            onChange={(option) => setSessionType(option.value)}
+            className="react-select-container"
+            classNamePrefix="react-select"
+          />
+        </div>
+
+        {/* Time Zone Select */}
+        <div className="w-full sm:w-1/3">
+          <label className="block text-gray-700 font-medium mb-2">Time Zone</label>
+          <Select
+            options={timeOptions}
+            value={selectedTime}
+            onChange={handleTimeZoneChange}
+            className="react-select-container"
+            classNamePrefix="react-select"
+          />
+        </div>
+
+        {/* Language Partner Select with photo */}
+        <div className="w-full sm:w-1/3">
+          <label className="block text-gray-700 font-medium mb-2">Language Partner</label>
+          <Select
+            options={tutorList.map((t) => ({
+              value: t.name,
+              label: t.name,
+              image: t.image
+            }))}
+            value={{
+              value: activeTutor,
+              label: activeTutor,
+              image: tutorList.find(t => t.name === activeTutor)?.image
+            }}
+            onChange={(option) => setActiveTutor(option.value)}
+            formatOptionLabel={({ label, image }) => (
+              <div className="flex items-center gap-2">
+                <img src={image} alt={label} className="w-6 h-6 rounded-full object-cover" />
+                <span>{label}</span>
+              </div>
+            )}
+            className="react-select-container"
+            classNamePrefix="react-select"
+            isSearchable
+          />
+        </div>
       </div>
 
+      {/* Week navigation */}
       <div className="flex justify-between items-center mb-4">
         <button onClick={() => changeWeek('prev')} className="text-xl px-3 py-1 text-secondary border border-secondary rounded-full">←</button>
         <h2 className="text-lg font-semibold">{format(weekStart, 'MMM d')} - {format(addDays(weekStart, 6), 'MMM d, yyyy')}</h2>
         <button onClick={() => changeWeek('next')} className="text-xl px-3 py-1 text-secondary border border-secondary rounded-full">→</button>
       </div>
 
+      {/* Days grid */}
       <div className="grid grid-cols-7 text-center gap-2 mb-6">
         {dayNames.map((day, i) => {
           const date = addDays(weekStart, i);
@@ -175,6 +256,7 @@ const ScheduleCalendar = () => {
         })}
       </div>
 
+      {/* Time slots */}
       {activeDayIndex !== null && (
         <>
           <h3 className="text-md font-semibold mb-2">🌅 Morning</h3>
@@ -194,7 +276,7 @@ const ScheduleCalendar = () => {
         </>
       )}
     </div>
-  );
+  </div>
+);
 };
-
 export default ScheduleCalendar;
