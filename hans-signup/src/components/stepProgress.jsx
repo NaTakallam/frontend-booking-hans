@@ -5,16 +5,17 @@ import { useNavigate } from 'react-router-dom';
 
 
 const StepProgress = ({ currentStep, setCurrentStep }) => {
-  const totalSteps = 5;
+  const totalSteps = 6;
   const navigate = useNavigate();
 
-  const steps = ['levelForm', 'topicsForm', 'typeForm', 'skillsForm', 'availabilityForm']; // Step names
+  const steps = ['levelForm', 'topicsForm', 'typeForm', 'skillsForm', 'availabilityForm','confirmationBox']; // Step names
 const componentsMap = {
   levelForm: () => import('./levelForm'),
   topicsForm: () => import('./topicsForm'),
   typeForm: () => import('./typeForm'),
   skillsForm: () => import('./skillsForm'),
   availabilityForm: () => import('./availabilityForm'),
+  confirmationBox: () => import('./confirmationBox'),
 }; 
   const [Component, setComponent] = useState(null); // State to hold dynamically imported component
   const { formData, setFormData } = useFormData(); // ✅ access form data
@@ -24,7 +25,8 @@ const componentsMap = {
     const stepName = steps[currentStep];
     if (componentsMap[stepName]) {
       const component = await componentsMap[stepName]();
-      setComponent(() => component.default);
+      setComponent(() => (props) => <component.default {...props} />);
+
     } else {
       console.error(`Component not found for step: ${stepName}`);
     }
@@ -119,7 +121,7 @@ const componentsMap = {
       </ul>
       {/* Render the dynamically imported component */}
       <div className="component-name font-fellix">
-        {Component ? <Component /> : <div>Loading...</div>}
+        {Component ? <Component currentStep={currentStep} setCurrentStep={setCurrentStep} /> : <div>Loading...</div>}
       </div>
       <div className="navigation-buttons">
         {currentStep !== 0 && (
