@@ -9,12 +9,7 @@
     --black-input:#E7E7E7;
 
 }
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Inter', sans-serif; /* i need to use the font fellix but it does not work here , i need to intall it */
-}
+
 /* Left Section (Sign-Up Form) */
 .left-section {
     width: 50%;

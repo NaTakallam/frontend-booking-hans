@@ -16,6 +16,8 @@ export default {
       },
       fontFamily: {
         fellix: ["Fellix", "sans-serif"],
+        sans: ["Fellix", "sans-serif"], // <--- this sets the default
+
       },
     },
   },
