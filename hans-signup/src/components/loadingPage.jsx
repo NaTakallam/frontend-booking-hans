@@ -19,11 +19,11 @@ const transformToPartnerCards = (apiResponse) => {
 
     return {
       name: `${d.firstName} ${d.lastName}`,
-      image: `/placeholder-avatar.png`, // You can replace this with a real image URL if available
+      image: d.photo?.[0]?.url || '/placeholder-avatar.png',
       origin: d.country_of_origin?.[0] || 'Unknown',
       location: d.city?.[0] || 'Unknown',
       hobbies: d.common_skills?.join(', ') || '',
-      fieldOfStudy: d.common_field_of_study?.join(', ') || '—',
+      fieldOfStudy: d.field_of_study?.join(', ') || '—',
       interest: d.common_topic?.join(', ') || '—',
       description: d.short_bio?.[0] || 'No bio available.',
       schedule: d.schedule,
