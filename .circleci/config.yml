@@ -42,7 +42,7 @@ jobs:
             echo "Host $SSH_HOST" > ~/.ssh/config
             echo "  HostName $SSH_HOST" >> ~/.ssh/config
             echo "  User $SSH_USER" >> ~/.ssh/config
-            echo "  Port 56378" >> ~/.ssh/config
+            echo "  Port 5678" >> ~/.ssh/config
             echo "  IdentityFile ~/.ssh/id_rsa" >> ~/.ssh/config
             echo "  StrictHostKeyChecking no" >> ~/.ssh/config
             chmod 600 ~/.ssh/config
