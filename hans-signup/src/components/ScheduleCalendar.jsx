@@ -152,7 +152,9 @@ const ScheduleCalendar = () => {
                 key={`${i}-${j}`}
                 onClick={() => toggleSlot(dateStr, slot)}
                 className={`text-sm px-3 py-2 rounded-full border transition-all duration-200 ease-in-out ${
-                  selected ? 'bg-secondary text-white border-secondary' : 'bg-white text-secondary border-secondary hover:bg-secondary'
+                  selected
+                    ? 'bg-secondary text-white border-secondary'
+                    : 'bg-white text-secondary border-secondary hover:bg-secondary hover:text-white'
                 }`}
               >
                 {slot}
@@ -167,14 +169,34 @@ const ScheduleCalendar = () => {
   const changeWeek = (dir) => {
     setWeekStart(addDays(weekStart, dir === 'next' ? 7 : -7));
   };
+  const tutorName = activeTutor || 'the selected tutor';
+     let formattedDateTime = '';
+      let sessionDuration = '';
+
+      if (selectedSlots.length > 0) {
+        if (sessionType === 'Trial') {
+          const [datePart, timePart] = selectedSlots[0].split('|');
+          formattedDateTime = moment(datePart).format('dddd, MMM D, YYYY') + ' at ' + timePart.split('-')[0].trim();
+          sessionDuration = '1 hour';
+        } else {
+          // Show all selected session dates
+          formattedDateTime = selectedSlots
+            .map((slot) => {
+              const [datePart, timePart] = slot.split('|');
+              return `${moment(datePart).format('ddd, MMM D')} at ${timePart.trim()}`;
+            })
+            .join(', ');
+          sessionDuration = ''; // Clear this for multiple sessions
+        }
+      }
 
   return (
   <div className="font-fellix">
     <div className="p-6 max-w-5xl mx-auto">
       <div className="flex flex-wrap sm:flex-nowrap gap-4 mb-6">
         {/* Session Type Select */}
-        <div className="w-full sm:w-1/3">
-          <label className="block text-gray-700 font-medium mb-2">Session Type</label>
+        <div className="w-full sm:w-1/3 shadow-md rounded-lg">
+          <h2 className="block text-gray-700 font-medium mb-2">Session Type</h2>
           <Select
             options={[
               { value: 'Trial', label: 'Trial Session - 1 Hour' },
@@ -188,8 +210,8 @@ const ScheduleCalendar = () => {
         </div>
 
         {/* Time Zone Select */}
-        <div className="w-full sm:w-1/3">
-          <label className="block text-gray-700 font-medium mb-2">Time Zone</label>
+        <div className="w-full sm:w-1/3 shadow-md rounded-lg">
+          <h2 className="block text-gray-700 font-medium mb-2">Time Zone</h2>
           <Select
             options={timeOptions}
             value={selectedTime}
@@ -200,8 +222,8 @@ const ScheduleCalendar = () => {
         </div>
 
         {/* Language Partner Select with photo */}
-        <div className="w-full sm:w-1/3">
-          <label className="block text-gray-700 font-medium mb-2">Language Partner</label>
+        <div className="w-full sm:w-1/3 shadow-md rounded-lg">
+          <h2 className="block text-gray-700 font-medium mb-2">Language Partner</h2>
           <Select
             options={tutorList.map((t) => ({
               value: t.name,
@@ -265,18 +287,33 @@ const ScheduleCalendar = () => {
           <h3 className="text-md font-semibold mt-6 mb-2">🌞 Afternoon</h3>
           {renderTimeSlots('afternoon')}
 
-          <div className="flex justify-center mt-8">
+          <div className="mt-8 space-y-4 text-center">
+            <p className="bg-green-100 text-gray-800 text-sm md:text-base px-4 py-2 rounded-full shadow-sm inline-block">
+              You’re booking a <span className="font-semibold">{sessionType}</span> session with <span className="font-bold">{tutorName}</span>
+              {formattedDateTime && (
+                <>
+                  {' '}on <span className="font-semibold">{formattedDateTime}</span>
+                </>
+              )}
+              {sessionType === 'Trial' && sessionDuration && (
+                <> · ⏰ {sessionDuration}</>
+              )}
+            </p>
             <button
               onClick={() => alert(`Booking sessions:\n${selectedSlots.join('\n')}`)}
-              className="bg-secondary hover:bg-secondary text-white px-6 py-3 rounded-full text-lg font-semibold"
+              className="w-full bg-[#800000] text-white py-3 rounded-md font-semibold hover:opacity-90 transition duration-300"
             >
-              Booking
+              Continue
             </button>
+
+            <p className="text-sm text-gray-700">
+              You will be asked for your credit card. We will only charge you <span className="text-green-700 font-bold">$10</span> if you missed your free trial session
+            </p>
           </div>
         </>
       )}
     </div>
   </div>
 );
-};
+}; 
 export default ScheduleCalendar;
