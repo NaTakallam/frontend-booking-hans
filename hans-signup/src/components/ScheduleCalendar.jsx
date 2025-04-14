@@ -288,17 +288,25 @@ const ScheduleCalendar = () => {
           {renderTimeSlots('afternoon')}
 
           <div className="mt-8 space-y-4 text-center">
-            <p className="bg-green-100 text-gray-800 text-sm md:text-base px-4 py-2 rounded-full shadow-sm inline-block">
-              You’re booking a <span className="font-semibold">{sessionType}</span> session with <span className="font-bold">{tutorName}</span>
-              {formattedDateTime && (
-                <>
-                  {' '}on <span className="font-semibold">{formattedDateTime}</span>
-                </>
-              )}
-              {sessionType === 'Trial' && sessionDuration && (
-                <> · ⏰ {sessionDuration}</>
-              )}
-            </p>
+          <div className="bg-green-100 text-gray-800 text-sm md:text-base px-4 py-2 rounded-full shadow-sm flex justify-between items-center w-full">
+          <div>
+            You’re booking a <span className="font-semibold">{sessionType}</span> session with <span className="font-bold">{tutorName}</span>
+            {formattedDateTime && (
+              <> on <span className="font-semibold">{formattedDateTime}</span></>
+            )}
+            {sessionType === 'Trial' && sessionDuration && (
+              <> · ⏰ {sessionDuration}</>
+            )}
+          </div>
+
+          <button
+            onClick={() => setSelectedSlots([])}
+            className="ml-4 text-xs text-[#8C8C8C] font-medium"
+            style={{ background: "transparent", border: "none" }}
+          >
+            Cancel ✕
+          </button>
+          </div>
             <button
               onClick={() => alert(`Booking sessions:\n${selectedSlots.join('\n')}`)}
               className="w-full bg-[#800000] text-white py-3 rounded-md font-semibold hover:opacity-90 transition duration-300"

@@ -3,12 +3,14 @@ import moment from "moment-timezone";
 import Select from "react-select";
 import { FaSun, FaMoon, FaRegSun } from "react-icons/fa";
 import { AiOutlineClose } from "react-icons/ai";
+import YourCalendarComponent from "./YourCalendarComponent";
 import { useFormData } from "./FormDataContext";
 
 export default function AvailabilityForm({ currentStep, setCurrentStep }) {
   const { formData, setFormData } = useFormData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedWeekdays, setSelectedWeekdays] = useState([]);
+  const [showCalendar, setShowCalendar] = useState(false);
   const [selectedTimeSlots, setSelectedTimeSlots] = useState([]);
   const [customSlots, setCustomSlots] = useState([{ days: [], from: "", to: "" }]);
 
@@ -286,7 +288,32 @@ export default function AvailabilityForm({ currentStep, setCurrentStep }) {
           <button onClick={handleOpenModal} className="text-green-600 underline">
             Set your availability
           </button>
+          <button
+            onClick={() => setShowCalendar(true)}
+            className="text-blue-600 underline mt-2 block"
+          >
+            📅 Open Calendar View
+          </button>
         </p>
+        {showCalendar && (
+          <div className="mt-6 border rounded shadow-lg p-4 bg-white">
+            <YourCalendarComponent
+              onClose={() => setShowCalendar(false)}
+              onSubmit={(timeRanges) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  availability: timeRanges,
+                }));
+                setShowCalendar(false);
+
+                // ✅ Move to ConfirmationBox
+                if (typeof setCurrentStep === "function") {
+                  setCurrentStep((prev) => prev + 1);
+                }
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {isModalOpen && (

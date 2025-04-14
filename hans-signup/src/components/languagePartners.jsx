@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { FaRegCalendarAlt } from 'react-icons/fa';
 import { FaRegQuestionCircle } from 'react-icons/fa';
+import { useFormData } from "./FormDataContext";
 
 const partners = [
   {
@@ -47,6 +48,8 @@ export default function LanguagePartners() {
   const descriptionRefs = useRef([]);
   const location = useLocation();
   const navigate = useNavigate();
+  const { formData } = useFormData();
+  const selectedLanguage = formData?.target_language || "English";
   const { result } = location.state || {};
   const partners = result?.matches || [
   {
@@ -107,9 +110,9 @@ if (!partners.length) {
 }
   return (
     <div className="bg-white p-6 sm:p-6 max-w-5xl mx-auto">
-      <h2 className="text-xl sm:text-2xl font-bold mb-2">Your English Language Partner</h2>
+      <h2 className="text-xl font-bold mb-6">Your {selectedLanguage} Language Partner</h2>
       <p className="text-gray-600 mb-6 text-sm sm:text-base">
-        Choose from 3 personalized English Language partners to grow, work, and enjoy your journey! 🌍✨
+        Choose from 3 personalized {selectedLanguage} Language partners to grow, work, and enjoy your journey! 🌍✨
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-7 items-stretch">
