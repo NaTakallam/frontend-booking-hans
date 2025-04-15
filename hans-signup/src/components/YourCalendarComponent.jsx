@@ -21,11 +21,12 @@ const generateTimeOptions = () => {
       </option>
     ));
   };
-  
+
 const YourCalendarComponent = ({ onClose, onSubmit }) => {
   const [events, setEvents] = useState([]);
   const [pendingSlot, setPendingSlot] = useState(null);
-  const [tooltipPosition, setTooltipPosition] = useState({ top: 100, left: 300 });
+  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+
 
   const handleSelectSlot = ({ start, end }) => {
     const overlap = events.some(
@@ -100,7 +101,17 @@ const YourCalendarComponent = ({ onClose, onSubmit }) => {
           <Calendar
             selectable
             localizer={localizer}
-            events={events}
+            events={[
+                ...events,
+                ...(pendingSlot
+                  ? [{
+                      title: "New Schedule",
+                      start: pendingSlot.start,
+                      end: pendingSlot.end,
+                      allDay: false,
+                    }]
+                  : [])
+              ]}
             defaultView="week"
             views={["week"]}
             step={30}
@@ -109,6 +120,17 @@ const YourCalendarComponent = ({ onClose, onSubmit }) => {
             onSelectSlot={handleSelectSlot}
             onSelectEvent={handleSelectEvent}
             style={{ height: "calc(100% - 60px)" }}
+            eventPropGetter={(event) => {
+                const isPending = event.title === "New Schedule";
+                return {
+                  style: {
+                    backgroundColor: isPending ? "#1D4ED8" : "#34d399", // green vs blue
+                    border: "none",
+                    color: "white",
+                    fontWeight: "500"
+                  }
+                };
+              }}
           />
         </div>
 

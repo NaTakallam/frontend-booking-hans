@@ -37,6 +37,7 @@ const levels = [
 ];
 
 const languageOptions = [
+  { value: '', label: 'Select your language', isDisabled: true },
   { value: 'English', label: 'English' },
   { value: 'Spanish', label: 'Spanish' },
   { value: 'Arabic - Levantine', label: 'Arabic - Levantine' },
@@ -52,7 +53,7 @@ const LevelForm = () => {
   const currentIndex = levels.findIndex((level) => level.title === formData.level);
   const value = currentIndex === -1 ? 1 : currentIndex;
   const selected = levels[value];
-  const [selectedLanguage, setSelectedLanguage] = useState(languageOptions[0].value);
+  const [selectedLanguage, setSelectedLanguage] = useState("");
 
   const handleChange = (e) => {
     const newIndex = Number(e.target.value);
@@ -66,9 +67,9 @@ const LevelForm = () => {
   };
   return (
     <div className="slider-container">
-     <label className="slider-label mb-1 text-sm font-medium text-gray-700">
+     {/* <label className="slider-label mb-1 text-sm font-medium text-gray-700">
         Choose the language
-      </label>
+      </label> */}
     <Select
           options={languageOptions}
           value={languageOptions.find((lang) => lang.value === selectedLanguage)}
@@ -86,6 +87,7 @@ const LevelForm = () => {
             singleValue: (base) => ({ ...base, color: 'black' }),
           }}
         />
+        <br></br>
       <label className="slider-label">Please select your level</label>
 
       <div className="slider-wrapper">

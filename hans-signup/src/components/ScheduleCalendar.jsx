@@ -203,7 +203,15 @@ const ScheduleCalendar = () => {
               { value: 'Multiple', label: 'Multiple Sessions' }
             ]}
             value={{ value: sessionType, label: sessionType === 'Trial' ? 'Trial Session - 1 Hour' : 'Multiple Sessions' }}
-            onChange={(option) => setSessionType(option.value)}
+            onChange={(option) => {
+              const newType = option.value;
+              setSessionType(newType);
+            
+              // Clear slots if switching to Trial
+              if (newType === 'Trial') {
+                setSelectedSlots([]);
+              }
+            }}
             className="react-select-container"
             classNamePrefix="react-select"
           />
@@ -235,7 +243,10 @@ const ScheduleCalendar = () => {
               label: activeTutor,
               image: tutorList.find(t => t.name === activeTutor)?.image
             }}
-            onChange={(option) => setActiveTutor(option.value)}
+            onChange={(option) => {
+              setActiveTutor(option.value);
+              setSelectedSlots([]); // ✅ Clear session selections
+            }}
             formatOptionLabel={({ label, image }) => (
               <div className="flex items-center gap-2">
                 <img src={image} alt={label} className="w-6 h-6 rounded-full object-cover" />

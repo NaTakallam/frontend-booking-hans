@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 const StepProgress = ({ currentStep, setCurrentStep }) => {
   const totalSteps = 6;
   const navigate = useNavigate();
+  const [validationMessage, setValidationMessage] = useState("");
 
   const steps = ['levelForm', 'topicsForm', 'typeForm', 'skillsForm', 'availabilityForm','confirmationBox']; // Step names
 const componentsMap = {
@@ -43,6 +44,14 @@ const componentsMap = {
   };
 
   const handleNext = async () => {
+    if (currentStep === 0) {
+      if (!formData.target_language || !formData.level) {
+        setValidationMessage("Please select both a language and a level before continuing.");
+        return;
+      } else {
+        setValidationMessage(""); // clear message if valid
+      }
+    }
     if (currentStep === totalSteps - 1) {
       // If availability already formatted from modal, skip
     if (!formData.availability || formData.availability.length === 0) {
@@ -123,6 +132,11 @@ const componentsMap = {
       <div className="component-name font-fellix">
         {Component ? <Component currentStep={currentStep} setCurrentStep={setCurrentStep} /> : <div>Loading...</div>}
       </div>
+      {validationMessage && (
+        <p className="text-red-600 text-sm text-center mb-2">
+          {validationMessage}
+        </p>
+      )}
       <div className="navigation-buttons">
         {currentStep !== 0 && (
           <button
