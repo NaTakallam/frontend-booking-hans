@@ -114,7 +114,7 @@ jobs:
             if ! ssh $SSH_HOST "
               cd $DEPLOY_PATH &&
               npm install --no-audit --no-fund --progress=false &&
-              npm install react-router-dom crypto-js react-select moment-timezone date-fns &&
+              npm install react-router-dom crypto-js react-select moment-timezone date-fns react-big-calendar &&
               npm run build
             "; then
               echo "Error: Failed to install dependencies or build on server"
