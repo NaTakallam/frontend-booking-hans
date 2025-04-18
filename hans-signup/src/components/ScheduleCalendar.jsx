@@ -254,6 +254,7 @@ const ScheduleCalendar = () => {
               start_time: startTime.format('YYYY-MM-DDTHH:mm:ss'),
               end_time: endTime.format('YYYY-MM-DDTHH:mm:ss'),
               time_zone: formData.timezone,
+              email:"ahmadsleiman562@gmail.com",
             };
             // console.log(payload);
             try {
