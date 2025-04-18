@@ -2,7 +2,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from datetime import datetime
 
-def send_event_confirmation_email(participant_email, start_time, end_time, timezone):
+def send_event_confirmation_email(participant_email, start_time, end_time, timezone, meet_link=None, organizer_email=None):
     subject = 'Event Booking Confirmation'
     
     # Format the times in a readable format
@@ -17,7 +17,21 @@ Your event has been successfully scheduled!
 Date: {start_str}
 End Time: {end_str}
 Time Zone: {timezone}
+"""
 
+    if organizer_email:
+        message += f"""
+Organizer: {organizer_email}
+"""
+
+    if meet_link:
+        message += f"""
+Google Meet Link: {meet_link}
+
+You can join the meeting by clicking the link above when it's time.
+"""
+
+    message += """
 The event has been added to your Google Calendar, and you will receive a calendar invitation shortly.
 
 Best regards,

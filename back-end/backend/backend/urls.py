@@ -16,8 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from booking.views import oauth2callback
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('booking.urls')),
+    path('oauth2callback/', oauth2callback, name='oauth2callback'),
 ]
