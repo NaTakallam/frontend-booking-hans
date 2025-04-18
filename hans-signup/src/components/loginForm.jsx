@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import ntkLogo from '/NaTakallam-logo-2.png';
+import { useFormData } from './FormDataContext';
 
 const LoginForm = ({ setStep }) => {
-  // Initialize state from localStorage or set to empty string/false if none exists
+  const { setFormData } = useFormData();
+
   const [email, setEmail] = useState(() => {
     const storedData = localStorage.getItem("loginData");
     return storedData ? JSON.parse(storedData).email : '';
   });
-  
+
   const [password, setPassword] = useState(() => {
     const storedData = localStorage.getItem("loginData");
     return storedData ? JSON.parse(storedData).password : '';
@@ -21,22 +23,34 @@ const LoginForm = ({ setStep }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Save the form data to localStorage
-    localStorage.setItem("loginData", JSON.stringify({
+    const loginData = {
       email,
       password,
       rememberMe
+    };
+
+    localStorage.setItem("loginData", JSON.stringify(loginData));
+
+    setFormData(prev => ({
+      ...prev,
+      ...loginData
     }));
 
-    console.log("Form Submitted:");
-    // You can also navigate to the next step here if needed
-    setStep(2); // Assuming 2 is the next step after login (adjust accordingly)
+    // Also merge into unified formData in localStorage
+    const existingFormData = JSON.parse(localStorage.getItem("formData")) || {};
+    const mergedFormData = {
+      ...existingFormData,
+      ...loginData
+    };
+    localStorage.setItem("formData", JSON.stringify(mergedFormData));
+
+    setStep(2); // Proceed to next step
   };
 
   return (
     <div className="w-1/2 flex font-fellix justify-center items-center bg-white px-10">
       <div className="w-full max-w-sm text-center">
-        <img src="/NaTakallam-logo-2.png" alt="Logo" className="w-20 mb-5 mx-auto logo-ntk" />
+        <img src={ntkLogo} alt="Logo" className="w-20 mb-5 mx-auto logo-ntk" />
         <h2 className="text-xl font-fellix text-black mb-2">Welcome Back</h2>
         <p className="text-sm text-lightGrey mb-5 font-fellix">Please enter your credentials</p>
 
@@ -48,8 +62,8 @@ const LoginForm = ({ setStep }) => {
             className="w-full p-3 border border-blackInput rounded-md text-black text-sm shadow-sm font-fellix"
             placeholder="Enter your email"
             required
-            value={email}  // Controlled input value
-            onChange={(e) => setEmail(e.target.value)} // Set email state
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
 
@@ -61,8 +75,8 @@ const LoginForm = ({ setStep }) => {
             className="w-full p-3 border border-blackInput rounded-md text-black text-sm shadow-sm font-fellix"
             placeholder="••••••••"
             required
-            value={password}  // Controlled input value
-            onChange={(e) => setPassword(e.target.value)} // Set password state
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
         </div>
 
@@ -70,11 +84,11 @@ const LoginForm = ({ setStep }) => {
           <div className="checkbox-container">
             <input
               type="checkbox"
-              id="subscribe"
-              checked={rememberMe} // Controlled checkbox state
-              onChange={(e) => setRememberMe(e.target.checked)} // Set rememberMe state
+              id="rememberMe"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
             />
-            <label className="subscribe font-fellix">Remember Me</label>
+            <label htmlFor="rememberMe" className="subscribe font-fellix">Remember Me</label>
           </div>
           <div className="forget-pass">
             <a href="#" className="forget-color font-fellix">Forget Password?</a>
@@ -95,7 +109,7 @@ const LoginForm = ({ setStep }) => {
         </div>
 
         <button
-          onClick={() => setStep(1)} // Switch to the create account step
+          onClick={() => setStep(1)}
           className="w-full font-fellix p-3 mt-3 bg-transparent border border-primary text-primary font-bold uppercase tracking-wide rounded-md hover:bg-primary hover:text-white transition"
         >
           CREATE ACCOUNT

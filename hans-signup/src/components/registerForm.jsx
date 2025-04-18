@@ -28,6 +28,13 @@ export default function RegisterForm({ setStep }) {
 
     // Save updated form data to localStorage
     localStorage.setItem("userFormData", JSON.stringify(updatedFormData));
+    // Also merge into unified formData in localStorage
+    const existingFormData = JSON.parse(localStorage.getItem("formData")) || {};
+    const mergedFormData = {
+      ...existingFormData,
+      ...updatedFormData
+    };
+    localStorage.setItem("formData", JSON.stringify(mergedFormData));
   };
 
   // Handle form submission

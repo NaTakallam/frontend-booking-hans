@@ -183,13 +183,105 @@ const ScheduleCalendar = () => {
           formattedDateTime = selectedSlots
             .map((slot) => {
               const [datePart, timePart] = slot.split('|');
-              return `${moment(datePart).format('ddd, MMM D')} at ${timePart.trim()}`;
-            })
-            .join(', ');
+              const formattedDate = moment(datePart).format('ddd, MMM D'); // Format date
+              const formattedTime = timePart.trim();
+              return `You’re booking a Multiple session with ${tutorName} on ${formattedDate} at ${formattedTime}`;
+            }).join('\n');
           sessionDuration = ''; // Clear this for multiple sessions
         }
       }
 
+      const handleContinue = async () => {
+        if (!selectedSlots.length) { 
+          alert('Please select a time slot.');
+          return;
+        }
+      
+        const formData = JSON.parse(localStorage.getItem("formData"));
+        if (sessionType === 'Trial') {
+          const [datePartRaw, timePart] = selectedSlots[0].split('|');
+          const datePart = moment(datePartRaw).format('YYYY-MM-DD'); // ✅ convert to correct format
+          const [startHour] = timePart.split('-');
+          
+          // Now we can safely build the time in the correct timezone
+          const startTime = moment.tz(`${datePart}T${startHour.trim()}`, formData.timezone);
+          const endTime = moment(startTime).add(1, 'hour');
+          
+          const email = formData?.email;
+          const payload = {
+            participants: [email], // replace with dynamic emails if needed
+            start_time: startTime.format('YYYY-MM-DDTHH:mm:ss'),
+            end_time: endTime.format('YYYY-MM-DDTHH:mm:ss'),
+            time_zone: formData.timezone,
+            email:"ahmadsleiman562@gmail.com",
+          };
+        
+          try {
+            const response = await fetch('https://booking.natakallam.com/api/events/', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            });          
+        
+            const result = await response.json();
+        
+            if (!response.ok) {
+              console.error('Booking failed:', result);
+              alert('❌ Failed to book session. Please try again.');
+              return;
+            }
+        
+            alert('✅ Booking successful!');
+            console.log('Server response:', result);
+          } catch (error) {
+            console.error('Error sending booking:', error);
+            alert('❌ An unexpected error occurred.');
+          }
+        }
+        else{
+          for (const slot of selectedSlots) {
+            const [datePartRaw, timePart] = slot.split('|');
+            const datePart = moment(datePartRaw).format('YYYY-MM-DD'); // ✅ convert to correct format
+            const [startHour] = timePart.split('-');
+            
+            // Now we can safely build the time in the correct timezone
+            const startTime = moment.tz(`${datePart}T${startHour.trim()}`, formData.timezone);
+            const endTime = moment(startTime).add(1, 'hour');
+            
+            const email = formData?.email;
+            const payload = {
+              participants: [email], // replace with dynamic emails if needed
+              start_time: startTime.format('YYYY-MM-DDTHH:mm:ss'),
+              end_time: endTime.format('YYYY-MM-DDTHH:mm:ss'),
+              time_zone: formData.timezone,
+            };
+            // console.log(payload);
+            try {
+              const response = await fetch('https://booking.natakallam.com/api/events/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+              });          
+          
+              const result = await response.json();
+          
+              if (!response.ok) {
+                console.error('Booking failed:', result);
+                alert('❌ Failed to book session. Please try again.');
+                return;
+              }
+          
+              alert('✅ Booking successful!');
+              console.log('Server response:', result);
+            } catch (error) {
+              console.error('Error sending booking:', error);
+              alert('❌ An unexpected error occurred.');
+            }
+          }
+        }
+        
+      };
+      
   return (
   <div className="font-fellix">
     <div className="p-6 max-w-5xl mx-auto">
@@ -299,18 +391,35 @@ const ScheduleCalendar = () => {
           {renderTimeSlots('afternoon')}
 
           <div className="mt-8 space-y-4 text-center">
-          <div className="bg-green-100 text-gray-800 text-sm md:text-base px-4 py-2 rounded-full shadow-sm flex justify-between items-center w-full">
-          <div>
-            You’re booking a <span className="font-semibold">{sessionType}</span> session with <span className="font-bold">{tutorName}</span>
-            {formattedDateTime && (
-              <> on <span className="font-semibold">{formattedDateTime}</span></>
-            )}
-            {sessionType === 'Trial' && sessionDuration && (
-              <> · ⏰ {sessionDuration}</>
-            )}
-          </div>
+  <div className="bg-green-100 text-gray-800 text-sm md:text-base px-4 py-2 rounded-full shadow-sm flex justify-between items-center w-full">
+    <div>
+      {sessionType === 'Multiple' ? (
+        // For Multiple sessions, display each session on a new line
+        selectedSlots.map((slot, index) => {
+          const [datePart, timePart] = slot.split('|');
+          const formattedDate = moment(datePart).format('ddd, MMM D');
+          const formattedTime = timePart.trim();
 
-          <button
+          return (
+            <div key={index}>
+                      You’re booking a <span className="font-semibold">{sessionType}</span> session with <span className="font-bold">{tutorName}</span> on <span className="font-semibold">{formattedDate}</span> at <span className="font-semibold">{formattedTime}</span>
+                    </div>
+                  );
+                })
+              ) : (
+                // For Trial session, show it in one line as before
+                <>
+                  You’re booking a <span className="font-semibold">{sessionType}</span> session with <span className="font-bold">{tutorName}</span>
+                  {formattedDateTime && (
+                    <> on <span className="font-semibold">{formattedDateTime}</span></>
+                  )}
+                  {sessionType === 'Trial' && sessionDuration && (
+                    <> · ⏰ {sessionDuration}</>
+                  )}
+                </>
+              )}
+            </div>
+         <button
             onClick={() => setSelectedSlots([])}
             className="ml-4 text-xs text-[#8C8C8C] font-medium"
             style={{ background: "transparent", border: "none" }}
@@ -319,7 +428,7 @@ const ScheduleCalendar = () => {
           </button>
           </div>
             <button
-              onClick={() => alert(`Booking sessions:\n${selectedSlots.join('\n')}`)}
+              onClick={handleContinue}
               className="w-full bg-[#800000] text-white py-3 rounded-md font-semibold hover:opacity-90 transition duration-300"
             >
               Continue
